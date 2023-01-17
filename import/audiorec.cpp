@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QAudioBuffer>
 #include <QIODevice>
+#include <QMediaRecorder>
 
 AudioRec::AudioRec(QObject *parent) :
     QObject(parent),

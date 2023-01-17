@@ -202,7 +202,7 @@ public Q_SLOTS:
     QString skillId() const;
 
 protected:
-    void geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry) override;
+    void geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry) override;
     protected:
     //void classBegin() override;
     void componentComplete() override;
@@ -253,8 +253,8 @@ private:
     void syncChildItemsGeometry(const QSizeF &size);
     //internal accessorts for the contentData QProperty
     static void contentData_append(QQmlListProperty<QObject> *prop, QObject *object);
-    static int contentData_count(QQmlListProperty<QObject> *prop);
-    static QObject *contentData_at(QQmlListProperty<QObject> *prop, int index);
+    static qsizetype contentData_count(QQmlListProperty<QObject> *prop);
+    static QObject *contentData_at(QQmlListProperty<QObject> *prop, qsizetype index);
     static void contentData_clear(QQmlListProperty<QObject> *prop);
 
     QPointer<QQuickItem> m_contentItem;

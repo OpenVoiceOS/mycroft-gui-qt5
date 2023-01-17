@@ -23,6 +23,7 @@
 #include "abstractskillview.h"
 #include "controllerconfig.h"
 
+#include <QFile>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -218,12 +219,15 @@ void MycroftController::onMainSocketMessageReceived(const QString &message)
         audioopt.append(qUtf8Printable(aud_values));
         QByteArray aud_array = QByteArray::fromBase64(audioopt, QByteArray::Base64UrlEncoding);
         QByteArray ret_aud = QByteArray::fromBase64(aud_array);
+        //error: variable has incomplete type 'QFile'
+        // fix: #include <QFile>
+ 
         QFile file(QStringLiteral("/tmp/incoming.wav"));
         file.open(QIODevice::WriteOnly);
         file.write(ret_aud);
         file.close();
         QMediaPlayer *player = new QMediaPlayer;
-        player->setMedia(QUrl::fromLocalFile(QStringLiteral("/tmp/incoming.wav")));
+        player->setSource(QUrl::fromLocalFile(QStringLiteral("/tmp/incoming.wav")));
         player->play();
     }
 

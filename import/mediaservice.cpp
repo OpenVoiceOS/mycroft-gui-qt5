@@ -103,8 +103,8 @@ void MediaService::processBuffer(QAudioBuffer buffer)
         for(int i=0; i<buffer.frameCount(); i++){
             sample[i] = data[i].left/peakValue;
 #ifndef Q_OS_ANDROID
-            levelLeft+= abs(data[i].left)/peakValue;
-            levelRight+= abs(data[i].right)/peakValue;
+            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
 #else
             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
@@ -123,8 +123,8 @@ void MediaService::processBuffer(QAudioBuffer buffer)
         for(int i=0; i<buffer.frameCount(); i++){
             sample[i] = data[i].left/peakValue;
 #ifndef Q_OS_ANDROID
-            levelLeft+= abs(data[i].left)/peakValue;
-            levelRight+= abs(data[i].right)/peakValue;
+            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
 #else
             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
@@ -142,8 +142,8 @@ void MediaService::processBuffer(QAudioBuffer buffer)
             }
             else{
 #ifndef Q_OS_ANDROID
-                levelLeft+= abs(data[i].left)/peakValue;
-                levelRight+= abs(data[i].right)/peakValue;
+                levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+                levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
 #else
                 levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
                 levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);

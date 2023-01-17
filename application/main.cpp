@@ -33,7 +33,7 @@
 #include "keyfilter.h"
 #else
 #include <QApplication>
-#include <KDBusService>
+//#include <KDBusService>
 #endif
 
 #include "speechintent.h"
@@ -42,7 +42,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QStringList arguments;
     for (int a = 0; a < argc; ++a) {
@@ -70,6 +70,8 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_ANDROID
     QGuiApplication app(argc, argv);
 #else
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
     QApplication app(argc, argv);
 #endif
 
@@ -89,7 +91,6 @@ int main(int argc, char *argv[])
         parser.showHelp();
         return 0;
     }
-
     QtWebView::initialize();
 
     QQuickView view;
@@ -128,7 +129,7 @@ int main(int argc, char *argv[])
 #ifndef Q_OS_ANDROID
     if (parser.isSet(skillOption)) {
         app.setApplicationName(QStringLiteral("mycroft.gui.") + singleSkill);
-        KDBusService service(KDBusService::Unique);
+        //KDBusService service(KDBusService::Unique);
     }
 #endif
 

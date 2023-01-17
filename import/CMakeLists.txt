@@ -11,8 +11,8 @@ set(mycroftimport_SRCS
     sessiondatamodel.cpp
     globalsettings.cpp
     filereader.cpp
-    audiorec.cpp
-    mediaservice.cpp
+    # audiorec.cpp
+    # mediaservice.cpp
     thirdparty/fftcalc.cpp
     thirdparty/fft.cpp
     )
@@ -26,20 +26,20 @@ add_library(mycroftplugin SHARED ${mycroftimport_SRCS} ${RESOURCES})
 
 if (CMAKE_SYSTEM_NAME STREQUAL "Android")
     set(mycroftplugin_EXTRA_LIBS
-        Qt5::TextToSpeech
+        Qt6::TextToSpeech
     )
 endif()
 
 target_link_libraries(mycroftplugin
         PUBLIC
-            Qt5::Core
-            Qt5::Multimedia
+            Qt6::Core
+            Qt6::Multimedia
             ${mycroftplugin_EXTRA_LIBS}
         PRIVATE
-            Qt5::Qml
-            Qt5::Quick
-            Qt5::Network
-            Qt5::WebSockets
+            Qt6::Qml
+            Qt6::Quick
+            Qt6::Network
+            Qt6::WebSockets
     )
 
 install(TARGETS mycroftplugin DESTINATION ${KDE_INSTALL_QMLDIR}/Mycroft)
