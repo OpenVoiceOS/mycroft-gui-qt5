@@ -11,7 +11,7 @@ set(mycroftimport_SRCS
     sessiondatamodel.cpp
     globalsettings.cpp
     filereader.cpp
-    # audiorec.cpp
+    audiorec.cpp
     # mediaservice.cpp
     thirdparty/fftcalc.cpp
     thirdparty/fft.cpp

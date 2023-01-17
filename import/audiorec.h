@@ -7,7 +7,7 @@
 #include "mycroftcontroller.h"
 #include "controllerconfig.h"
 
-#include <QAudioInput>
+#include <QAudioSource>
 
 class AudioRec : public QObject
 {
@@ -31,9 +31,8 @@ private:
     QFile destinationFile;
     QByteArray m_audStream;
     qint16 m_audStream_size;
-    QAudioInput *audio;
+    QAudioSource *audio;
     QIODevice *device;
 };
 
 #endif // AUDIOREC_H
- 

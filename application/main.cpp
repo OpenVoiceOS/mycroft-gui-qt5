@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_ANDROID
     QGuiApplication app(argc, argv);
 #else
-    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
+    // QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    // QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
     QApplication app(argc, argv);
 #endif
 
