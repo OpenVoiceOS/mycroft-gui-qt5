@@ -29,7 +29,6 @@
 #include "sessiondatamap.h"
 #include "audiorec.h"
 #include "mediaservice.h"
-#include "coloroverlay.h"
 
 #include <QQmlEngine>
 #include <QQmlContext>
@@ -90,7 +89,6 @@ void MycroftPlugin::registerTypes(const char *uri)
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/SoundEffects.qml")), uri, 1, 0, "SoundEffects");
     qmlRegisterType<AbstractSkillView>(uri, 1, 0, "AbstractSkillView");
     qmlRegisterType<AbstractDelegate>(uri, 1, 0, "AbstractDelegate");
-    qmlRegisterType<ColorOverlay>(uri, 1, 0, "ColorOverlay");
     qmlRegisterType(QUrl(QStringLiteral("qrc:/qml/AudioPlayer.qml")), uri, 1, 0, "AudioPlayer");
     qmlRegisterType(QUrl(QStringLiteral("qrc:/qml/AutoFitLabel.qml")), uri, 1, 0, "AutoFitLabel");
     qmlRegisterType(QUrl(QStringLiteral("qrc:/qml/Delegate.qml")), uri, 1, 0, "Delegate");

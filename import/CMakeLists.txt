@@ -13,7 +13,6 @@ set(mycroftimport_SRCS
     filereader.cpp
     audiorec.cpp
     mediaservice.cpp
-    coloroverlay.cpp
     thirdparty/fftcalc.cpp
     thirdparty/fft.cpp
     )
