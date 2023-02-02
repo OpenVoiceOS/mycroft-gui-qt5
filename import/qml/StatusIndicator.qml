@@ -16,10 +16,10 @@
  *
  */
 
-import QtQuick 2.9
-import QtGraphicalEffects 1.0
-import org.kde.kirigami 2.5 as Kirigami
-import Mycroft 1.0 as Mycroft
+import QtQuick
+import Qt5Compat.GraphicalEffects
+import org.kde.kirigami as Kirigami
+import Mycroft as Mycroft
 
 Item {
     id: root

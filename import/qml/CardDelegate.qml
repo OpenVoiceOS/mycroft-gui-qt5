@@ -15,12 +15,12 @@
  *
  */
 
-import QtQuick 2.12
-import QtQuick.Layouts 1.12
-import QtQuick.Controls 2.12 as Controls
-import org.kde.kirigami 2.11 as Kirigami
-import QtGraphicalEffects 1.12
-import Mycroft 1.0 as Mycroft
+import QtQuick
+import QtQuick.Layouts
+import QtQuick.Controls as Controls
+import org.kde.kirigami as Kirigami
+import Qt5Compat.GraphicalEffects
+import Mycroft as Mycroft
 
 Delegate {
     id: root

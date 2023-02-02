@@ -16,18 +16,19 @@
  */
 
 #include "mediaservice.h"
-#include <QAudioProbe>
-#include <QMediaObject>
+// #include <QAudioProbe>
+// #include <QMediaObject>
 #include <QMediaPlayer>
 #include <QAudioDecoder>
-#include <QAudioDeviceInfo>
+// #include <QAudioDeviceInfo>
 #include <QAudioInput>
-#include <QAudioRecorder>
+// #include <QAudioRecorder>
+#include <QAudioBuffer>
 
 MediaService::MediaService(QObject *parent)
     : QObject(parent),
-      m_controller(MycroftController::instance()),
-      mVideoSurface(nullptr)
+      m_controller(MycroftController::instance())
+    //   mVideoSurface(nullptr)
 {
     if (m_controller->status() == MycroftController::Open){
         connect(m_controller, &MycroftController::intentRecevied, this,
@@ -36,6 +37,7 @@ MediaService::MediaService(QObject *parent)
 
     calculator = new FFTCalc(this);
     m_player = new QMediaPlayer;
+    m_audioOutput = new QAudioOutput;
     connect(calculator, &FFTCalc::calculatedSpectrum, this, [this](QVector<double> spectrum) {
         int size = 20;
         m_spectrum.resize(size);
@@ -48,117 +50,118 @@ MediaService::MediaService(QObject *parent)
     });
 
     connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &MediaService::onMediaStatusChanged);
-    setupProbeSource();
+    //setupProbeSource();
 }
 
-void MediaService::setupProbeSource()
-{
-    QAudioProbe *probe = new QAudioProbe;
-    probe->setSource(m_player);
+//void MediaService::setupProbeSource()
+//{
+    // QAudioProbe *probe = new QAudioProbe;
+    // probe->setSource(m_player);
 
-    connect(probe, SIGNAL(audioBufferProbed(QAudioBuffer)), this, SLOT(processBuffer(QAudioBuffer)));
+    // connect(probe, SIGNAL(audioBufferProbed(QAudioBuffer)), this, SLOT(processBuffer(QAudioBuffer)));
 
-    return;
-}
+    // return;
+//}
 
-QAbstractVideoSurface *MediaService::videoSurface() const
-{
-    return mVideoSurface;
-}
+// QAbstractVideoSurface *MediaService::videoSurface() const
+// {
+//     return mVideoSurface;
+// }
 
-void MediaService::setVidSurface(QAbstractVideoSurface *videoSurface)
-{
-    if(videoSurface != mVideoSurface)
-    {
-        mVideoSurface = videoSurface;
-        m_player->setVideoOutput(mVideoSurface);
+// void MediaService::setVidSurface(QAbstractVideoSurface *videoSurface)
+// {
+//     if(videoSurface != mVideoSurface)
+//     {
+//         mVideoSurface = videoSurface;
+//         m_player->setVideoOutput(mVideoSurface);
 
-        emit signalVideoSurfaceChanged();
-    }
-}
+//         emit signalVideoSurfaceChanged();
+//     }
+// }
 
-void MediaService::processBuffer(QAudioBuffer buffer)
-{
-    qreal peakValue;
-    int duration;
+// void MediaService::processBuffer(QAudioBuffer buffer)
+// {
+//     qreal peakValue;
+//     int duration;
 
-    if(buffer.frameCount() < 512)
-        return;
+//     if(buffer.frameCount() < 512)
+//         return;
 
-    levelLeft = levelRight = 0;
+//     levelLeft = levelRight = 0;
 
-    if(buffer.format().channelCount() != 2)
-        return;
+//     if(buffer.format().channelCount() != 2)
+//         return;
 
-    sample.resize(buffer.frameCount());
-    if(buffer.format().sampleType() == QAudioFormat::SignedInt){
-        QAudioBuffer::S16S *data = buffer.data<QAudioBuffer::S16S>();
-        if (buffer.format().sampleSize() == 32)
-            peakValue=INT_MAX;
-        else if (buffer.format().sampleSize() == 16)
-            peakValue=SHRT_MAX;
-        else
-            peakValue=CHAR_MAX;
+//     sample.resize(buffer.frameCount());
+//     if(buffer.format().sampleType() == QAudioFormat::SignedInt){
+//         QAudioBuffer::S16S *data = buffer.data<QAudioBuffer::S16S>();
+//         if (buffer.format().sampleSize() == 32)
+//             peakValue=INT_MAX;
+//         else if (buffer.format().sampleSize() == 16)
+//             peakValue=SHRT_MAX;
+//         else
+//             peakValue=CHAR_MAX;
 
-        for(int i=0; i<buffer.frameCount(); i++){
-            sample[i] = data[i].left/peakValue;
-#ifndef Q_OS_ANDROID
-            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#else
-            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#endif
-        }
-    }
+//         for(int i=0; i<buffer.frameCount(); i++){
+//             sample[i] = data[i].left/peakValue;
+// #ifndef Q_OS_ANDROID
+//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
+// #else
+//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
+// #endif
+//         }
+//     }
 
-    else if(buffer.format().sampleType() == QAudioFormat::UnSignedInt){
-        QAudioBuffer::S16U *data = buffer.data<QAudioBuffer::S16U>();
-        if (buffer.format().sampleSize() == 32)
-            peakValue=UINT_MAX;
-        else if (buffer.format().sampleSize() == 16)
-            peakValue=USHRT_MAX;
-        else
-            peakValue=UCHAR_MAX;
-        for(int i=0; i<buffer.frameCount(); i++){
-            sample[i] = data[i].left/peakValue;
-#ifndef Q_OS_ANDROID
-            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#else
-            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#endif
-        }
-    }
+//     else if(buffer.format().sampleType() == QAudioFormat::UnSignedInt){
+//         QAudioBuffer::S16U *data = buffer.data<QAudioBuffer::S16U>();
+//         if (buffer.format().sampleSize() == 32)
+//             peakValue=UINT_MAX;
+//         else if (buffer.format().sampleSize() == 16)
+//             peakValue=USHRT_MAX;
+//         else
+//             peakValue=UCHAR_MAX;
+//         for(int i=0; i<buffer.frameCount(); i++){
+//             sample[i] = data[i].left/peakValue;
+// #ifndef Q_OS_ANDROID
+//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
+// #else
+//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
+// #endif
+//         }
+//     }
 
-    else if(buffer.format().sampleType() == QAudioFormat::Float){
-        QAudioBuffer::S32F *data = buffer.data<QAudioBuffer::S32F>();
-        peakValue = 1.00003;
-        for(int i=0; i<buffer.frameCount(); i++){
-            sample[i] = data[i].left/peakValue;
-            if(sample[i] != sample[i]){
-                sample[i] = 0;
-            }
-            else{
-#ifndef Q_OS_ANDROID
-                levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-                levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#else
-                levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-                levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#endif
-            }
-        }
-    }
-    duration = buffer.format().durationForBytes(buffer.frameCount())/1000;
-    calculator->calc(sample, duration);
-    emit levels(levelLeft/buffer.frameCount(), levelRight/buffer.frameCount());
-}
+//     else if(buffer.format().sampleType() == QAudioFormat::Float){
+//         QAudioBuffer::S32F *data = buffer.data<QAudioBuffer::S32F>();
+//         peakValue = 1.00003;
+//         for(int i=0; i<buffer.frameCount(); i++){
+//             sample[i] = data[i].left/peakValue;
+//             if(sample[i] != sample[i]){
+//                 sample[i] = 0;
+//             }
+//             else{
+// #ifndef Q_OS_ANDROID
+//                 levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+//                 levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
+// #else
+//                 levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
+//                 levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
+// #endif
+//             }
+//         }
+//     }
+//     duration = buffer.format().durationForBytes(buffer.frameCount())/1000;
+//     calculator->calc(sample, duration);
+//     emit levels(levelLeft/buffer.frameCount(), levelRight/buffer.frameCount());
+// }
 
 void MediaService::playURL(const QString &filename)
 {
-    m_player->setMedia(QUrl(filename));
+    m_player->setAudioOutput(m_audioOutput);
+    m_player->setSource(QUrl(filename));
     m_player->play();
     setPlaybackState(QMediaPlayer::PlayingState);
     connect(m_player, &QMediaPlayer::durationChanged, this, [&](qint64 dur) {
@@ -213,12 +216,12 @@ void MediaService::playerShuffle()
     m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.shuffle"), m_emptyData);
 }
 
-QMediaPlayer::State MediaService::getPlaybackState()
+QMediaPlayer::PlaybackState MediaService::getPlaybackState()
 {
     return m_playerState;
 }
 
-void MediaService::setPlaybackState(QMediaPlayer::State playbackState)
+void MediaService::setPlaybackState(QMediaPlayer::PlaybackState playbackState)
 {
     m_playerState = playbackState;
     emit playbackStateChanged(playbackState);
@@ -267,9 +270,9 @@ bool MediaService::getRepeat()
     return m_repeat;
 }
 
-QMediaPlayer::State MediaService::playbackState() const
+QMediaPlayer::PlaybackState MediaService::playbackState() const
 {
-    return m_player->state();
+    return m_player->playbackState();
 }
 
 void MediaService::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
@@ -282,28 +285,28 @@ void MediaService::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
 
     if (status == QMediaPlayer::LoadedMedia || status == QMediaPlayer::BufferedMedia)
     {
-        QStringList metadataAvailableList = m_player->availableMetaData();
-        int availableListSize = metadataAvailableList.size();
-        QString availableMetaKey;
-        QVariant availableMetaVal;
+        // QStringList metadataAvailableList = m_player->metaData();
+        // int availableListSize = metadataAvailableList.size();
+        // QString availableMetaKey;
+        // QVariant availableMetaVal;
 
-        m_metadataList.clear();
-        for (int idx = 0; idx < availableListSize; idx++)
-        {
-            availableMetaKey = metadataAvailableList.at(idx);
-            availableMetaVal = m_player->metaData(availableMetaKey);
-            m_metadataList.insert(availableMetaKey, availableMetaVal);
+        // m_metadataList.clear();
+        // for (int idx = 0; idx < availableListSize; idx++)
+        // {
+        //     availableMetaKey = metadataAvailableList.at(idx);
+        //     availableMetaVal = m_player->metaData(availableMetaKey);
+        //     m_metadataList.insert(availableMetaKey, availableMetaVal);
 
-            if(availableMetaKey == QStringLiteral("Title")){
-                m_title = m_player->metaData(availableMetaKey).toString();
-            }
-            if(availableMetaKey == QStringLiteral("Artist")){
-                m_artist = m_player->metaData(availableMetaKey).toString();
-            }
-        }
+        //     if(availableMetaKey == QStringLiteral("Title")){
+        //         m_title = m_player->metaData(availableMetaKey).toString();
+        //     }
+        //     if(availableMetaKey == QStringLiteral("Artist")){
+        //         m_artist = m_player->metaData(availableMetaKey).toString();
+        //     }
+        // }
 
-        emit metaUpdated();
-        m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.meta"), m_metadataList);
+        // emit metaUpdated();
+        // m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.meta"), m_metadataList);
     }
 }
 

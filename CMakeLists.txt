@@ -76,7 +76,7 @@ find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n)
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
     find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS Widgets)
     find_package(KF5Plasma ${KF5_MIN_VERSION} REQUIRED)
-    find_package(KF5DBusAddons ${KF5_MIN_VERSION} REQUIRED)
+    # find_package(KF5DBusAddons ${KF5_MIN_VERSION} REQUIRED)
     find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED)
 endif()
 

@@ -15,9 +15,8 @@
  *
  */
 
-import QtQuick 2.4
-import QtQuick.Window 2.2
-import org.kde.kirigami 2.4
+import QtQuick
+import QtQuick.Window
 
 pragma Singleton
 

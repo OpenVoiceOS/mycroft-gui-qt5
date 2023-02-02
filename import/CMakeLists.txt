@@ -12,7 +12,8 @@ set(mycroftimport_SRCS
     globalsettings.cpp
     filereader.cpp
     audiorec.cpp
-    # mediaservice.cpp
+    mediaservice.cpp
+    coloroverlay.cpp
     thirdparty/fftcalc.cpp
     thirdparty/fft.cpp
     )
@@ -20,7 +21,7 @@ set(mycroftimport_SRCS
 configure_file(controllerconfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/controllerconfig.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-qt5_add_resources(mycroftimport_SRCS mycroft.qrc)
+qt6_add_resources(mycroftimport_SRCS mycroft.qrc)
 
 add_library(mycroftplugin SHARED ${mycroftimport_SRCS} ${RESOURCES})
 

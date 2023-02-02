@@ -28,7 +28,8 @@
 #include "delegatesmodel.h"
 #include "sessiondatamap.h"
 #include "audiorec.h"
-// #include "mediaservice.h"
+#include "mediaservice.h"
+#include "coloroverlay.h"
 
 #include <QQmlEngine>
 #include <QQmlContext>
@@ -67,13 +68,13 @@ static QObject *audioRecSingletonProvider(QQmlEngine *engine, QJSEngine *scriptE
     return new AudioRec;
 }
 
-// static QObject *mediaServiceSingletonProvider(QQmlEngine *engine, QJSEngine *scriptEngine)
-// {
-//     Q_UNUSED(engine)
-//     Q_UNUSED(scriptEngine)
+static QObject *mediaServiceSingletonProvider(QQmlEngine *engine, QJSEngine *scriptEngine)
+{
+    Q_UNUSED(engine)
+    Q_UNUSED(scriptEngine)
 
-//     return new MediaService;
-// }
+    return new MediaService;
+}
 
 void MycroftPlugin::registerTypes(const char *uri)
 {
@@ -84,11 +85,12 @@ void MycroftPlugin::registerTypes(const char *uri)
     qmlRegisterSingletonType<GlobalSettings>(uri, 1, 0, "GlobalSettings", globalSettingsSingletonProvider);
     qmlRegisterSingletonType<FileReader>(uri, 1, 0, "FileReader", fileReaderSingletonProvider);
     qmlRegisterSingletonType<AudioRec>(uri, 1, 0, "AudioRec", audioRecSingletonProvider);
-    // qmlRegisterSingletonType<MediaService>(uri, 1, 0, "MediaService", mediaServiceSingletonProvider);
+    qmlRegisterSingletonType<MediaService>(uri, 1, 0, "MediaService", mediaServiceSingletonProvider);
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/Units.qml")), uri, 1, 0, "Units");
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/SoundEffects.qml")), uri, 1, 0, "SoundEffects");
     qmlRegisterType<AbstractSkillView>(uri, 1, 0, "AbstractSkillView");
     qmlRegisterType<AbstractDelegate>(uri, 1, 0, "AbstractDelegate");
+    qmlRegisterType<ColorOverlay>(uri, 1, 0, "ColorOverlay");
     qmlRegisterType(QUrl(QStringLiteral("qrc:/qml/AudioPlayer.qml")), uri, 1, 0, "AudioPlayer");
     qmlRegisterType(QUrl(QStringLiteral("qrc:/qml/AutoFitLabel.qml")), uri, 1, 0, "AutoFitLabel");
     qmlRegisterType(QUrl(QStringLiteral("qrc:/qml/Delegate.qml")), uri, 1, 0, "Delegate");

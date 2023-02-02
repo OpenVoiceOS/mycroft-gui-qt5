@@ -16,11 +16,11 @@
  *
  */
 
-import QtQuick 2.4
-import QtQuick.Controls 2.2 as Controls
-import QtQuick.Layouts 1.3
-import org.kde.kirigami 2.5 as Kirigami
-import Mycroft 1.0 as Mycroft
+import QtQuick
+import QtQuick.Controls as Controls
+import QtQuick.Layouts
+import org.kde.kirigami as Kirigami
+import Mycroft as Mycroft
 
 /**
  * Contains an slideshow object that can autoplay each slide and loop

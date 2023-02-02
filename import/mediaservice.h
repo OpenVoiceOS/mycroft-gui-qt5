@@ -19,33 +19,36 @@
 #define MEDIASERVICE_H
 
 #include <QObject>
-#include <QAudioProbe>
+// #include <QAudioProbe>
 #include <QVector>
 #include <QMediaPlayer>
-#include <QAbstractVideoSurface>
+// #include <QAbstractVideoSurface>
+#include <QVideoSink>
 #include <QJsonDocument>
 #include "thirdparty/fftcalc.h"
 #include "mycroftcontroller.h"
+#include <QAudioBuffer>
+#include <QAudioOutput>
 
 class MediaService : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QVector<double> spectrum READ spectrum NOTIFY spectrumChanged)
-    Q_PROPERTY(QMediaPlayer::State playbackState READ playbackState NOTIFY playbackStateChanged)
-    Q_PROPERTY(QAbstractVideoSurface* videoSurface READ videoSurface WRITE setVidSurface NOTIFY signalVideoSurfaceChanged)
+    Q_PROPERTY(QMediaPlayer::PlaybackState playbackState READ playbackState NOTIFY playbackStateChanged)
+    // Q_PROPERTY(QAbstractVideoSurface* videoSurface READ videoSurface WRITE setVidSurface NOTIFY signalVideoSurfaceChanged)
 
 public:
     explicit MediaService(QObject *parent = Q_NULLPTR);
 
-    QMediaPlayer::State playerState() const {return m_playerState;}
+    QMediaPlayer::PlaybackState playerState() const {return m_playerState;}
     QVector<double> spectrum() const {return m_spectrum;}
-    QAbstractVideoSurface *videoSurface() const;
-    void setVidSurface(QAbstractVideoSurface *videoSurface);
-    QMediaPlayer::State getPlaybackState();
+    // QAbstractVideoSurface *videoSurface() const;
+    // void setVidSurface(QAbstractVideoSurface *videoSurface);
+    QMediaPlayer::PlaybackState getPlaybackState();
 
 public Q_SLOTS:
-    void setupProbeSource();
-    void processBuffer(QAudioBuffer buffer);
+    // void setupProbeSource();
+    // void processBuffer(QAudioBuffer buffer);
     void playURL(const QString &filename);
     void playerStop();
     void playerPause();
@@ -56,18 +59,18 @@ public Q_SLOTS:
     void playerShuffle();
     void playerRepeat();
     void playerSeek(qint64 seekvalue);
-    QMediaPlayer::State playbackState() const;
-    void setPlaybackState(QMediaPlayer::State playbackState);
+    QMediaPlayer::PlaybackState playbackState() const;
+    void setPlaybackState(QMediaPlayer::PlaybackState playbackState);
     QString getTrack();
     QVariantMap getPlayerMeta();
     QVariantMap getCPSMeta();
     bool getRepeat();
 
-signals:
-    void signalVideoSurfaceChanged();
+// signals:
+//     void signalVideoSurfaceChanged();
 
 Q_SIGNALS:
-    void playbackStateChanged(QMediaPlayer::State pbstate);
+    void playbackStateChanged(QMediaPlayer::PlaybackState pbstate);
     void mediaStatusChanged(QMediaPlayer::MediaStatus status);
     void durationChanged(qint64 dur);
     void positionChanged(qint64 pos);
@@ -82,13 +85,13 @@ Q_SIGNALS:
 
 private:
     MycroftController *m_controller;
-    QAbstractVideoSurface *mVideoSurface;
+    // QAbstractVideoSurface *mVideoSurface;
     void onMainSocketIntentReceived(const QString &type, const QVariantMap &data);
     void onMediaStatusChanged(QMediaPlayer::MediaStatus status);
 
     QVector<double> sample;
     QVector<double> m_spectrum;
-    QMediaPlayer::State m_playerState;
+    QMediaPlayer::PlaybackState m_playerState;
     double levelLeft, levelRight;
     FFTCalc *calculator;
     QMediaPlayer *m_player;
@@ -102,6 +105,7 @@ private:
     QVariantMap m_metadataList;
     QVariantMap m_playerStateSync;
     QVariantMap m_currentMediaStatus;
+    QAudioOutput *m_audioOutput;
 
 signals:
     int levels(double left, double right);

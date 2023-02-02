@@ -15,8 +15,8 @@
  *
  */
 
-import QtQuick 2.4
-import QtMultimedia 5.11
+import QtQuick
+import QtMultimedia
 
 pragma Singleton
 
