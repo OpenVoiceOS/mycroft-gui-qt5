@@ -15,8 +15,8 @@
  *
  */
 
-import QtQuick
-import QtQuick.Controls as Controls
+import QtQuick 2.15
+import QtQuick.Controls 2.15 as Controls
 
 Controls.BusyIndicator {
     id: control
