@@ -14,13 +14,11 @@ Window {
     maximumWidth : deviceWidth || undefined
     x: deviceWidth ? Screen.desktopAvailableHeight - width : undefined
     y: deviceHeight ? Screen.desktopAvailableHeight - height : undefined
-
     color: "black"
 
     Mycroft.SkillView {
         id: mainView
         activeSkills.whiteList: singleSkill.length > 0 ? singleSkill : null
-        Kirigami.Theme.colorSet: nightSwitch.checked ? Kirigami.Theme.Complementary : Kirigami.Theme.View
         anchors.fill: parent
     }
 }
