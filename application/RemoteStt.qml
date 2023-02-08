@@ -32,11 +32,11 @@ Item {
     Connections {
         target: Mycroft.AudioRec
 
-        onMicAudioLevelChanged: {
+        function onMicAudioLevelChanged(micLevel) {
             animatedCircle.width = Kirigami.Units.iconSizes.large + (Kirigami.Units.iconSizes.smallMedium * micLevel)
         }
 
-        onRecordTStatus: {
+        function onRecordTStatus(recStatus) {
             switch(recStatus){
             case "Completed":
                 console.log("In Completed")
@@ -164,7 +164,9 @@ Item {
 
             MouseArea {
                 anchors.fill: parent
-                onClicked: audioRecorder.close()
+                onClicked: (mouse)=> { 
+                    audioRecorder.close()
+                }
             }
         }
     }

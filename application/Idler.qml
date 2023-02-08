@@ -29,7 +29,9 @@ Item {
         anchors.centerIn: parent
         text: "start"
         visible: Mycroft.MycroftController.status == Mycroft.MycroftController.Closed
-        onClicked: Mycroft.MycroftController.start();
+        onClicked: (mouse)=> { 
+            Mycroft.MycroftController.start();
+        }
     }
 
     ClockFace {
