@@ -70,8 +70,6 @@ int main(int argc, char *argv[])
 #ifdef Q_OS_ANDROID
     QGuiApplication app(argc, argv);
 #else
-    // QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
-    // QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
     QApplication app(argc, argv);
 #endif
 
@@ -91,6 +89,8 @@ int main(int argc, char *argv[])
         parser.showHelp();
         return 0;
     }
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
     QtWebView::initialize();
 
     QQuickView view;

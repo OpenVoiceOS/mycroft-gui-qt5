@@ -83,7 +83,7 @@ add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x060F00)
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_ASCII)
 
 add_subdirectory(application)
-add_subdirectory(icons)
+#add_subdirectory(icons)
 add_subdirectory(import)
 
 configure_file(data/mycroft-gui-core-loader.in ${CMAKE_CURRENT_BINARY_DIR}/mycroft-gui-core-loader)
