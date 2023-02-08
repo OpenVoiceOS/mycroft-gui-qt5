@@ -16,15 +16,15 @@
  *
  */
 
-import QtQuick
-import QtQuick.Layouts
-import QtQuick.Controls
-//import QtGraphicalEffects 1.0
-//import org.kde.kirigami 2.11 as Kirigami
-import QtQuick.Window
-import Mycroft 1.0 as Mycroft
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import QtQuick.Controls.Material 2.15
+import org.kde.kirigami 2.19 as Kirigami
+import Mycroft 1.0 as Mycroft 
 import org.kde.private.mycroftgui 1.0 as MycroftGui
-import QtQuick.Controls.Material 2.0
+import Qt5Compat.GraphicalEffects
 
 Window {
     id: root

@@ -5,8 +5,7 @@ option(BUILD_REMOTE_TTS "Build remote TTS support" OFF)
 option(BUILD_PLASMA_MOBILE "Build remote TTS support" OFF)
 
 set(QT_MIN_VERSION "6.4.0")
-set(KF5_MIN_VERSION "5.98.0")
-set(CMAKE_CXX_STANDARD 17)
+set(KF_MIN_VERSION "5.240.0")
 
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
@@ -14,8 +13,6 @@ ENDIF(POLICY CMP0048)
 
 PROJECT(mycroft-gui)
 PROJECT(mycroft-gui VERSION "1.0.1")
-
-find_package(Qt6 COMPONENTS Core)
 
 # Use Extra CMake Modules (ECM) for common functionality.
 # See http://api.kde.org/ecm/manual/ecm.7.html
@@ -67,16 +64,17 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Android")
         AndroidExtras
         QuickControls2
         TextToSpeech
+        Svg
     )
     find_package(OpenSSL REQUIRED)
 endif()
 
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS I18n)
 
 if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
     find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS Widgets)
+    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami2 DBusAddons)
     # find_package(KF5Plasma ${KF5_MIN_VERSION} REQUIRED)
-    # find_package(KF5DBusAddons ${KF5_MIN_VERSION} REQUIRED)
     # find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED)
 endif()
 
@@ -84,9 +82,8 @@ add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x060F00)
 
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_ASCII)
 
-#add_subdirectory(application)
-#add_subdirectory(icons)
-
+add_subdirectory(application)
+add_subdirectory(icons)
 add_subdirectory(import)
 
 configure_file(data/mycroft-gui-core-loader.in ${CMAKE_CURRENT_BINARY_DIR}/mycroft-gui-core-loader)
@@ -101,4 +98,3 @@ install(PROGRAMS ${CMAKE_CURRENT_BINARY_DIR}/mycroft-gui-ptt-loader DESTINATION 
 if (BUILD_TESTING AND NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
     #add_subdirectory(autotests)
 endif()
-

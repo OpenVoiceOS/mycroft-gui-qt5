@@ -33,7 +33,7 @@
 #include "keyfilter.h"
 #else
 #include <QApplication>
-//#include <KDBusService>
+#include <KDBusService>
 #endif
 
 #include "speechintent.h"
@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 #ifndef Q_OS_ANDROID
     if (parser.isSet(skillOption)) {
         app.setApplicationName(QStringLiteral("mycroft.gui.") + singleSkill);
-        //KDBusService service(KDBusService::Unique);
+        KDBusService service(KDBusService::Unique);
     }
 #endif
 

@@ -16,8 +16,8 @@
  *
  */
 
-import QtQuick 2.4
-import QtQuick.Controls 2.11
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 import Mycroft 1.0 as Mycroft
 
 /* Class used to simulate the homescreen in cases where we're not using minimal shell
