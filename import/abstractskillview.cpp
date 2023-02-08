@@ -286,6 +286,19 @@ QStringList jsonModelToStringList(const QString &key, const QJsonValue &data)
     return items;
 }
 
+bool canConvertToVariantList(const QVariant &variantValue)
+{
+    if (variantValue.userType() == QMetaType::QString) {
+        return false;
+    }
+
+    if (variantValue.userType() == QMetaType::QStringList) {
+        return false;
+    }
+
+    return variantValue.canConvert<QVariantList>();
+}
+
 void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 {
     QJsonParseError parseError;
@@ -331,8 +344,11 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         }
         QVariantMap::const_iterator i;
         for (i = data.constBegin(); i != data.constEnd(); ++i) {
-            //insert it as a model
-            QList<QVariantMap> list = variantListToOrderedMap(i.value().value<QVariantList>());
+            QList<QVariantMap> list;
+            if (canConvertToVariantList(i.value())) {
+                //insert it as a model
+                QList<QVariantMap> list = variantListToOrderedMap(i.value().value<QVariantList>());
+            }
             SessionDataModel *dm = map->value(i.key()).value<SessionDataModel *>();
 
             if (!list.isEmpty()) {
@@ -621,8 +637,11 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
             qWarning() << "Error: Invalid position in mycroft.session.list.insert";
             return;
         }
-
-        QList<QVariantMap> list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        
+        QList<QVariantMap> list
+        if(canConvertToVariantList(doc[QStringLiteral("data")].toVariant().value())) {
+            list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        }
 
         if (list.isEmpty()) {
             qWarning() << "Error: invalid data in mycroft.session.list.insert:" << doc[QStringLiteral("data")];
@@ -659,7 +678,10 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
             return;
         }
 
-        QList<QVariantMap> list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        QList<QVariantMap> list
+        if(canConvertToVariantList(doc[QStringLiteral("data")].toVariant().value())) {
+            list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        }
 
         if (list.isEmpty()) {
             qWarning() << "Error: invalid data in mycroft.session.list.insert:" << doc[QStringLiteral("data")];
