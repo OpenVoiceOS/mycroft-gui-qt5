@@ -23,6 +23,7 @@
 #include "abstractskillview.h"
 #include "controllerconfig.h"
 
+#include <QtGlobal>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -50,6 +51,7 @@ MycroftController::MycroftController(QObject *parent)
     : QObject(parent),
       m_appSettingObj(new GlobalSettings)
 {
+    m_qt_version_context = QStringLiteral("5");
     connect(&m_mainWebSocket, &QWebSocket::connected, this,
             [this] () {
                 m_reconnectTimer.stop();
@@ -61,9 +63,16 @@ MycroftController::MycroftController(QObject *parent)
                 emit socketStatusChanged();
                 if (state == QAbstractSocket::ConnectedState) {
                     qWarning() << "Main Socket connected, trying to connect gui";
+                    #if QT_VERSION >= 0x060000
+                        m_qt_version_context = QStringLiteral("6"); //QVariantMap({{QStringLiteral("qt_version"), QStringLiteral("6")}});
+                    #else
+                        m_qt_version_context = QStringLiteral("5");
+                    #endif
+
                     for (const auto &guiId : m_views.keys()) {
                         sendRequest(QStringLiteral("mycroft.gui.connected"),
-                                    QVariantMap({{QStringLiteral("gui_id"), guiId}}));
+                                    QVariantMap({{QStringLiteral("gui_id"), guiId}}),
+                                    QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
                     }
                     m_reannounceGuiTimer.start();
 
@@ -93,7 +102,7 @@ MycroftController::MycroftController(QObject *parent)
             if (m_views[guiId]->status() != Open) {
                 qWarning()<<"Retrying to announce gui";
                 sendRequest(QStringLiteral("mycroft.gui.connected"),
-                            QVariantMap({{QStringLiteral("gui_id"), guiId}}));
+                            QVariantMap({{QStringLiteral("gui_id"), guiId}}), QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
             }
         }
     });
@@ -339,10 +348,7 @@ void MycroftController::sendRequest(const QString &type, const QVariantMap &data
 
     root[QStringLiteral("type")] = type;
     root[QStringLiteral("data")] = QJsonObject::fromVariantMap(data);
-
-    if(m_appSettingObj->useHivemindProtocol()){
-        root[QStringLiteral("context")] = QJsonObject::fromVariantMap(context);
-    }
+    root[QStringLiteral("context")] = QJsonObject::fromVariantMap(context);
 
     QJsonDocument doc(root);
     m_mainWebSocket.sendTextMessage(QString::fromUtf8(doc.toJson()));
@@ -371,9 +377,9 @@ void MycroftController::sendBinary(const QString &type, const QJsonObject &data,
 void MycroftController::sendText(const QString &message)
 {
     if(!m_appSettingObj->useHivemindProtocol()){
-        sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("debug_cli")}, {QStringLiteral("destination"), QStringLiteral("skills")}}));
+        sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("debug_cli")}, {QStringLiteral("destination"), QStringLiteral("skills")}, {QStringLiteral("qt_version"), m_qt_version_context}}));
     } else {
-        sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("mycroft-gui")}, {QStringLiteral("destination"), QStringLiteral("skills")}}));
+        sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("mycroft-gui")}, {QStringLiteral("destination"), QStringLiteral("skills")}, {QStringLiteral("qt_version"), m_qt_version_context}}));
     }
 }
 
@@ -385,7 +391,7 @@ void MycroftController::registerView(AbstractSkillView *view)
 //TODO: manage view destruction
     if (m_mainWebSocket.state() == QAbstractSocket::ConnectedState) {
         sendRequest(QStringLiteral("mycroft.gui.connected"),
-                    QVariantMap({{QStringLiteral("gui_id"), view->id()}}));
+                    QVariantMap({{QStringLiteral("gui_id"), view->id()}}), QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
     }
 }
 
