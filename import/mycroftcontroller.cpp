@@ -64,7 +64,7 @@ MycroftController::MycroftController(QObject *parent)
                 if (state == QAbstractSocket::ConnectedState) {
                     qWarning() << "Main Socket connected, trying to connect gui";
                     #if QT_VERSION >= 0x060000
-                        m_qt_version_context = QStringLiteral("6"); //QVariantMap({{QStringLiteral("qt_version"), QStringLiteral("6")}});
+                        m_qt_version_context = QStringLiteral("6");
                     #else
                         m_qt_version_context = QStringLiteral("5");
                     #endif
