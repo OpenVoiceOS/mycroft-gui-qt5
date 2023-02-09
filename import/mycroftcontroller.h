@@ -128,7 +128,8 @@ private:
     bool m_isExpectingSpeechResponse = false;
     QQueue<QString> ttsqueue;
 #endif
-    
+
+    QString m_qt_version_context;
     bool m_isSpeaking = false;
     bool m_isListening = false;
     bool m_mycroftLaunched = false;
