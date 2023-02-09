@@ -23,6 +23,7 @@
 #include "abstractskillview.h"
 #include "controllerconfig.h"
 
+#include <QtGlobal>
 #include <QFile>
 #include <QJsonObject>
 #include <QJsonArray>
@@ -62,9 +63,15 @@ MycroftController::MycroftController(QObject *parent)
                 emit socketStatusChanged();
                 if (state == QAbstractSocket::ConnectedState) {
                     qWarning() << "Main Socket connected, trying to connect gui";
+                    QString qtVersion = QStringLiteral("6");
+                    #if QT_VERSION >= 0x060000
+                        qtVersion = QStringLiteral("6");
+                    #else
+                        qtVersion = QStringLiteral("5");
+                    #endif
                     for (const auto &guiId : m_views.keys()) {
                         sendRequest(QStringLiteral("mycroft.gui.connected"),
-                                    QVariantMap({{QStringLiteral("gui_id"), guiId}}));
+                                    QVariantMap({{QStringLiteral("gui_id"), guiId}}), QVariantMap({{QStringLiteral("qt_version"), qtVersion}}));
                     }
                     m_reannounceGuiTimer.start();
 
