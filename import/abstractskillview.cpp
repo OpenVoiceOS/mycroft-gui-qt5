@@ -638,7 +638,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
             return;
         }
         
-        QList<QVariantMap> list
+        QList<QVariantMap> list;
         if(canConvertToVariantList(doc[QStringLiteral("data")].toVariant().value())) {
             list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
         }
@@ -678,7 +678,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
             return;
         }
 
-        QList<QVariantMap> list
+        QList<QVariantMap> list;
         if(canConvertToVariantList(doc[QStringLiteral("data")].toVariant().value())) {
             list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
         }
