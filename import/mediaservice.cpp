@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 by Aditya Mehra <aix.m@outlook.com>
+ * Copyright 2023 by Aditya Mehra <aix.m@outlook.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,240 +16,273 @@
  */
 
 #include "mediaservice.h"
-// #include <QAudioProbe>
-// #include <QMediaObject>
-#include <QMediaPlayer>
-#include <QAudioDecoder>
-// #include <QAudioDeviceInfo>
-#include <QAudioInput>
-// #include <QAudioRecorder>
-#include <QAudioBuffer>
+#include <QDebug>
+
 
 MediaService::MediaService(QObject *parent)
     : QObject(parent),
-      m_controller(MycroftController::instance())
-    //   mVideoSurface(nullptr)
+    m_controller(MycroftController::instance())
 {
+    m_currentPlaybackState = MediaService::StoppedState;
+    m_currentMediaState = MediaService::NoMedia;
+    m_selectedProviderService = MediaService::NoProvider;
+
     if (m_controller->status() == MycroftController::Open){
         connect(m_controller, &MycroftController::intentRecevied, this,
                 &MediaService::onMainSocketIntentReceived);
     }
+}
 
-    calculator = new FFTCalc(this);
-    m_player = new QMediaPlayer;
-    m_audioOutput = new QAudioOutput;
-    connect(calculator, &FFTCalc::calculatedSpectrum, this, [this](QVector<double> spectrum) {
-        int size = 20;
-        m_spectrum.resize(size);
-        int j = 0;
-        for (int i = 0; i < spectrum.size(); i += spectrum.size()/(size - 1)) {
-            m_spectrum[j] = spectrum[i];
-            ++j;
+void MediaService::unloadAudioProvider(MediaService::UnloadStateReason reason)
+{
+    m_unloadingAudioService = true;
+    m_unloadReason = reason;
+    QObject::disconnect(m_audioProviderService, &AudioProviderService::mediaStateChanged, this, &MediaService::updateMediaStateAudioProvider);
+    QObject::disconnect(m_audioProviderService, &AudioProviderService::playBackStateChanged, this, &MediaService::updatePlaybackStateAudioProvider);
+    QObject::disconnect(m_audioProviderService, &AudioProviderService::spectrumChanged, this, &MediaService::updateSpectrum);
+    QObject::disconnect(m_audioProviderService, &AudioProviderService::durationChanged, this, &MediaService::updateDuration);
+    QObject::disconnect(m_audioProviderService, &AudioProviderService::positionChanged, this, &MediaService::updatePosition);
+    QTimer::singleShot(2000, this, [this](){
+        m_audioProviderService->deleteLater();
+        m_audioProviderService = nullptr;
+        if(m_unloadReason == MediaService::MediaFinished) {
+            emitEndOfMedia();
         }
-        emit spectrumChanged();
-    });
-
-    connect(m_player, &QMediaPlayer::mediaStatusChanged, this, &MediaService::onMediaStatusChanged);
-    //setupProbeSource();
-}
-
-//void MediaService::setupProbeSource()
-//{
-    // QAudioProbe *probe = new QAudioProbe;
-    // probe->setSource(m_player);
-
-    // connect(probe, SIGNAL(audioBufferProbed(QAudioBuffer)), this, SLOT(processBuffer(QAudioBuffer)));
-
-    // return;
-//}
-
-// QAbstractVideoSurface *MediaService::videoSurface() const
-// {
-//     return mVideoSurface;
-// }
-
-// void MediaService::setVidSurface(QAbstractVideoSurface *videoSurface)
-// {
-//     if(videoSurface != mVideoSurface)
-//     {
-//         mVideoSurface = videoSurface;
-//         m_player->setVideoOutput(mVideoSurface);
-
-//         emit signalVideoSurfaceChanged();
-//     }
-// }
-
-// void MediaService::processBuffer(QAudioBuffer buffer)
-// {
-//     qreal peakValue;
-//     int duration;
-
-//     if(buffer.frameCount() < 512)
-//         return;
-
-//     levelLeft = levelRight = 0;
-
-//     if(buffer.format().channelCount() != 2)
-//         return;
-
-//     sample.resize(buffer.frameCount());
-//     if(buffer.format().sampleType() == QAudioFormat::SignedInt){
-//         QAudioBuffer::S16S *data = buffer.data<QAudioBuffer::S16S>();
-//         if (buffer.format().sampleSize() == 32)
-//             peakValue=INT_MAX;
-//         else if (buffer.format().sampleSize() == 16)
-//             peakValue=SHRT_MAX;
-//         else
-//             peakValue=CHAR_MAX;
-
-//         for(int i=0; i<buffer.frameCount(); i++){
-//             sample[i] = data[i].left/peakValue;
-// #ifndef Q_OS_ANDROID
-//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-// #else
-//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-// #endif
-//         }
-//     }
-
-//     else if(buffer.format().sampleType() == QAudioFormat::UnSignedInt){
-//         QAudioBuffer::S16U *data = buffer.data<QAudioBuffer::S16U>();
-//         if (buffer.format().sampleSize() == 32)
-//             peakValue=UINT_MAX;
-//         else if (buffer.format().sampleSize() == 16)
-//             peakValue=USHRT_MAX;
-//         else
-//             peakValue=UCHAR_MAX;
-//         for(int i=0; i<buffer.frameCount(); i++){
-//             sample[i] = data[i].left/peakValue;
-// #ifndef Q_OS_ANDROID
-//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-// #else
-//             levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-//             levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-// #endif
-//         }
-//     }
-
-//     else if(buffer.format().sampleType() == QAudioFormat::Float){
-//         QAudioBuffer::S32F *data = buffer.data<QAudioBuffer::S32F>();
-//         peakValue = 1.00003;
-//         for(int i=0; i<buffer.frameCount(); i++){
-//             sample[i] = data[i].left/peakValue;
-//             if(sample[i] != sample[i]){
-//                 sample[i] = 0;
-//             }
-//             else{
-// #ifndef Q_OS_ANDROID
-//                 levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-//                 levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-// #else
-//                 levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-//                 levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-// #endif
-//             }
-//         }
-//     }
-//     duration = buffer.format().durationForBytes(buffer.frameCount())/1000;
-//     calculator->calc(sample, duration);
-//     emit levels(levelLeft/buffer.frameCount(), levelRight/buffer.frameCount());
-// }
-
-void MediaService::playURL(const QString &filename)
-{
-    m_player->setAudioOutput(m_audioOutput);
-    m_player->setSource(QUrl(filename));
-    m_player->play();
-    setPlaybackState(QMediaPlayer::PlayingState);
-    connect(m_player, &QMediaPlayer::durationChanged, this, [&](qint64 dur) {
-        emit durationChanged(dur);
-    });
-    connect(m_player, &QMediaPlayer::positionChanged, this, [&](qint64 pos) {
-        emit positionChanged(pos);
+        if(m_unloadReason == MediaService::ServiceUnloaded){
+            m_selectedProviderService = MediaService::NoProvider;
+        }
+        if(m_unloadReason == MediaService::MediaStopped){
+            emit positionChanged(0);
+            emit durationChanged(0);
+        }
+        m_audioServiceProviderInitialized = false;
+        emit audioProviderUnloaded();
+        m_unloadingAudioService = false;
     });
 }
 
-void MediaService::playerStop()
+void MediaService::unloadVideoProvider(MediaService::UnloadStateReason reason)
 {
-    m_player->stop();
-    setPlaybackState(QMediaPlayer::StoppedState);
+    m_videoProviderService->mediaStop();
+    m_unloadingVideoService = true;
+    m_unloadReason = MediaService::ServiceUnloaded;
+    emit videoProviderUnloaded();
+    m_unloadingVideoService = false;
 }
 
-void MediaService::playerPause()
+void MediaService::initializeAudioProvider()
 {
-    m_player->pause();
-    setPlaybackState(QMediaPlayer::PausedState);
+    m_audioProviderService = new AudioProviderService(this);
+    QObject::connect(m_audioProviderService, &AudioProviderService::mediaStateChanged, this, &MediaService::updateMediaStateAudioProvider);
+    QObject::connect(m_audioProviderService, &AudioProviderService::playBackStateChanged, this, &MediaService::updatePlaybackStateAudioProvider);
+    QObject::connect(m_audioProviderService, &AudioProviderService::spectrumChanged, this, &MediaService::updateSpectrum);
+    QObject::connect(m_audioProviderService, &AudioProviderService::durationChanged, this, &MediaService::updateDuration);
+    QObject::connect(m_audioProviderService, &AudioProviderService::positionChanged, this, &MediaService::updatePosition);
+    m_audioServiceProviderInitialized = true;
+    emit audioProviderInitialized();
 }
 
-void MediaService::playerContinue()
+void MediaService::initializeVideoProvider()
 {
-    m_player->play();
-    setPlaybackState(QMediaPlayer::PlayingState);
+    m_videoProviderService = new VideoProviderService(this);
+    QObject::connect(m_videoProviderService, &VideoProviderService::mediaStateChanged, this, &MediaService::updateMediaStateVideoProvider);
+    QObject::connect(m_videoProviderService, &VideoProviderService::playBackStateChanged, this, &MediaService::updatePlaybackStateVideoProvider);
+    QObject::connect(m_videoProviderService, &VideoProviderService::durationChanged, this, &MediaService::updateDuration);
+    QObject::connect(m_videoProviderService, &VideoProviderService::positionChanged, this, &MediaService::updatePosition);
+    m_videoServiceProviderInitialized = true;
+    emit videoProviderInitialized();
 }
 
-void MediaService::playerRestart()
+
+void MediaService::syncStates()
 {
-    m_player->stop();
-    playURL(m_track);
+    if(m_selectedProviderService == MediaService::AudioProvider) {
+        m_audioProviderService->syncStates();
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider) {
+        m_videoProviderService->syncStates();
+    }
 }
 
-void MediaService::playerNext()
+MediaService::PlaybackState MediaService::servicePlayBackState() const
+{
+    return m_currentPlaybackState;
+}
+
+MediaService::MediaState MediaService::serviceMediaState() const
+{
+    return m_currentMediaState;
+}
+
+void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServiceType serviceType)
+{
+    if(serviceType == MediaService::AudioProvider){
+        if(!evaluateUrl(url)) {
+            m_currentMediaState = MediaService::InvalidMedia;
+            emit mediaStateChanged(m_currentMediaState);
+            m_currentMediaState = MediaService::NoMedia;
+            emit mediaStateChanged(m_currentMediaState);
+            return;
+        }
+    }
+    m_loadedUrl = url;
+    changeProvider(serviceType);
+    // Wait for 2 seconds before continuing
+    qDebug() << "Waiting Here Timer For 1 Seconds";
+    QTimer::singleShot(250, this, [this](){
+        qDebug() << "Timer Completed After 1 Seconds";
+        if(m_selectedProviderService == MediaService::AudioProvider) {
+            if(m_currentPlaybackState == MediaService::PlayingState){
+                mediaPause();
+            }
+            if(!m_unloadingAudioService) {
+                if(m_audioServiceProviderInitialized && (!m_unloadReason == MediaService::MediaFinished || !m_unloadReason == MediaService::MediaStopped)) {
+                    QEventLoop loop;
+                    connect(this, &MediaService::audioProviderUnloaded, &loop, &QEventLoop::quit);
+                    unloadAudioProvider(MediaService::MediaChanged);
+                    loop.exec();
+                }
+                initializeAudioProvider();
+                m_audioProviderService->mediaPlay(m_loadedUrl);
+            }
+        }
+        if(m_selectedProviderService == MediaService::VideoProvider) {
+            if(!m_videoServiceProviderInitialized){
+                initializeVideoProvider();
+            }
+            QUrl url = QUrl::fromUserInput(m_loadedUrl);
+            m_videoProviderService->mediaPlay(url);
+        }
+    });
+}
+
+void MediaService::mediaStop()
+{
+    // Depending on selected service provider call the ServiceProvider.mediaStop() method
+    if(!m_unloadingAudioService) {
+        if(m_selectedProviderService == MediaService::AudioProvider) {
+            if(m_currentPlaybackState != MediaService::StoppedState){
+                mediaPause();
+                //m_audioProviderService->mediaStop();
+                QEventLoop loop;
+                connect(this, &MediaService::audioProviderUnloaded, &loop, &QEventLoop::quit);
+                unloadAudioProvider(MediaService::MediaStopped);
+                loop.exec();
+                m_currentPlaybackState = MediaService::StoppedState;
+                emit playbackStateChanged(m_currentPlaybackState);
+            }
+        }
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider) {
+        m_videoProviderService->mediaStop();
+    }
+}
+
+void MediaService::mediaPause()
+{
+    if(m_selectedProviderService == MediaService::AudioProvider) {
+        if(!m_unloadingAudioService) {
+            m_audioProviderService->mediaPause();
+        }
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider) {
+        m_videoProviderService->mediaPause();
+    }
+}
+
+void MediaService::mediaContinue()
+{
+    if(m_selectedProviderService == MediaService::AudioProvider) {
+        if(!m_unloadingAudioService) {
+            m_audioProviderService->mediaContinue();
+        }
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider) {
+        m_videoProviderService->mediaContinue();
+    }
+}
+
+void MediaService::mediaRestart()
+{
+    if(m_selectedProviderService == MediaService::AudioProvider) {
+        if(!m_unloadingAudioService) {
+          mediaLoadUrl(m_loadedUrl, MediaService::AudioProvider);
+        }
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider) {
+        m_videoProviderService->mediaRestart();
+    }
+}
+
+void MediaService::mediaNext()
 {
     m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.next"), m_emptyData);
 }
 
-void MediaService::playerPrevious()
+void MediaService::mediaPrevious()
 {
     m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.previous"), m_emptyData);
 }
 
-void MediaService::playerRepeat()
+void MediaService::mediaRepeat()
 {
     m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.repeat"), m_emptyData);
 }
 
-void MediaService::playerShuffle()
+void MediaService::mediaShuffle()
 {
     m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.shuffle"), m_emptyData);
 }
 
-QMediaPlayer::PlaybackState MediaService::getPlaybackState()
+void MediaService::mediaSeek(qint64 seekValue)
 {
-    return m_playerState;
+    if(m_selectedProviderService == MediaService::AudioProvider) {
+        if(!m_unloadingAudioService) {
+            if (m_audioServiceProviderInitialized){
+                mediaContinue();
+                m_audioProviderService->mediaSeek(seekValue);
+            }
+        }
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider) {
+        m_videoProviderService->mediaSeek(seekValue);
+    }
 }
 
-void MediaService::setPlaybackState(QMediaPlayer::PlaybackState playbackState)
+QVariant MediaService::requestServiceInfo(QString &serviceInfoType)
 {
-    m_playerState = playbackState;
-    emit playbackStateChanged(playbackState);
-
-    m_playerStateSync.clear();
-    m_playerStateSync.insert(QStringLiteral("state"), playbackState);
-    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playerStateSync);
+    if(serviceInfoType == "loadedUrl"){
+        return m_loadedUrl;
+    }
+    if(serviceInfoType == "receivedUrl"){
+        return m_receivedUrl;
+    }
+    if(serviceInfoType == "artist"){
+        return m_artist;
+    }
+    if(serviceInfoType == "album"){
+        return m_album;
+    }
+    if(serviceInfoType == "title"){
+        return m_title;
+    }
+    if(serviceInfoType == "thumbnail"){
+        return m_thumbnail;
+    }
+    if(serviceInfoType == "repeat"){
+        return m_repeat;
+    }
+    return false;
 }
 
-void MediaService::playerSeek(qint64 seekvalue)
+QVariantMap MediaService::requestServiceMetaData()
 {
-    m_player->setPosition(seekvalue);
+    return m_serviceMetaData;
 }
 
-QString MediaService::getTrack()
-{
-    return m_track;
-}
-
-QVariantMap MediaService::getPlayerMeta()
-{
-    return m_metadataList;
-}
-
-QVariantMap MediaService::getCPSMeta()
+QVariantMap MediaService::requestCommonPlayMetaData()
 {
     QVariantMap cpsMap;
-
     if(!m_artist.isEmpty()){
         cpsMap.insert(QStringLiteral("artist"), m_artist);
     };
@@ -265,74 +298,209 @@ QVariantMap MediaService::getCPSMeta()
     return cpsMap;
 }
 
-bool MediaService::getRepeat()
+void MediaService::updatePlaybackStateAudioProvider(AudioProviderService::PlaybackState playbackState)
 {
-    return m_repeat;
-}
-
-QMediaPlayer::PlaybackState MediaService::playbackState() const
-{
-    return m_player->playbackState();
-}
-
-void MediaService::onMediaStatusChanged(QMediaPlayer::MediaStatus status)
-{
-    emit mediaStatusChanged(status);
-
-    m_currentMediaStatus.clear();
-    m_currentMediaStatus.insert(QStringLiteral("status"), status);
-    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_currentMediaStatus);
-
-    if (status == QMediaPlayer::LoadedMedia || status == QMediaPlayer::BufferedMedia)
-    {
-        // QStringList metadataAvailableList = m_player->metaData();
-        // int availableListSize = metadataAvailableList.size();
-        // QString availableMetaKey;
-        // QVariant availableMetaVal;
-
-        // m_metadataList.clear();
-        // for (int idx = 0; idx < availableListSize; idx++)
-        // {
-        //     availableMetaKey = metadataAvailableList.at(idx);
-        //     availableMetaVal = m_player->metaData(availableMetaKey);
-        //     m_metadataList.insert(availableMetaKey, availableMetaVal);
-
-        //     if(availableMetaKey == QStringLiteral("Title")){
-        //         m_title = m_player->metaData(availableMetaKey).toString();
-        //     }
-        //     if(availableMetaKey == QStringLiteral("Artist")){
-        //         m_artist = m_player->metaData(availableMetaKey).toString();
-        //     }
-        // }
-
-        // emit metaUpdated();
-        // m_controller->sendRequest(QStringLiteral("gui.player.media.service.get.meta"), m_metadataList);
+    switch(playbackState) {
+        case AudioProviderService::PlayingState:
+            m_currentPlaybackState = MediaService::PlayingState;
+            break;
+        case AudioProviderService::PausedState:
+            m_currentPlaybackState = MediaService::PausedState;
+            break;
+        case AudioProviderService::StoppedState:
+            m_currentPlaybackState = MediaService::StoppedState;
+            break;
     }
+    emit playbackStateChanged(m_currentPlaybackState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playerStateSync)
+}
+
+void MediaService::updateMediaStateAudioProvider(AudioProviderService::MediaState mediaState)
+{
+    switch(mediaState) {
+        case AudioProviderService::NoMedia:
+            m_currentMediaState = MediaService::NoMedia;
+            break;
+        case AudioProviderService::LoadingMedia:
+            m_currentMediaState = MediaService::LoadingMedia;
+            break;
+        case AudioProviderService::LoadedMedia:
+            m_currentMediaState = MediaService::LoadedMedia;
+            break;
+        case AudioProviderService::StalledMedia:
+            m_currentMediaState = MediaService::StalledMedia;
+            break;
+        case AudioProviderService::BufferingMedia:
+            m_currentMediaState = MediaService::BufferingMedia;
+            break;
+        case AudioProviderService::BufferedMedia:
+            m_currentMediaState = MediaService::BufferedMedia;
+            break;
+        case AudioProviderService::EndOfMedia:
+            audioServiceEndOfMedia();
+            break;
+        case AudioProviderService::InvalidMedia:
+            m_currentMediaState = MediaService::InvalidMedia;
+            break;
+    }
+    emit mediaStateChanged(m_currentMediaState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_currentMediaState);
+}
+
+void MediaService::updatePlaybackStateVideoProvider(VideoProviderService::PlaybackState playbackState)
+{
+    switch(playbackState) {
+        case VideoProviderService::PlayingState:
+            m_currentPlaybackState = MediaService::PlayingState;
+            break;
+        case VideoProviderService::PausedState:
+            m_currentPlaybackState = MediaService::PausedState;
+            break;
+        case VideoProviderService::StoppedState:
+            m_currentPlaybackState = MediaService::StoppedState;
+            break;
+    }
+    emit playbackStateChanged(m_currentPlaybackState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playerStateSync)
+}
+
+void MediaService::updateMediaStateVideoProvider(VideoProviderService::MediaState mediaState)
+{
+    switch(mediaState) {
+        case VideoProviderService::NoMedia:
+            m_currentMediaState = MediaService::NoMedia;
+            break;
+        case VideoProviderService::LoadingMedia:
+            m_currentMediaState = MediaService::LoadingMedia;
+            break;
+        case VideoProviderService::LoadedMedia:
+            m_currentMediaState = MediaService::LoadedMedia;
+            break;
+        case VideoProviderService::StalledMedia:
+            m_currentMediaState = MediaService::StalledMedia;
+            break;
+        case VideoProviderService::BufferingMedia:
+            m_currentMediaState = MediaService::BufferingMedia;
+            break;
+        case VideoProviderService::BufferedMedia:
+            m_currentMediaState = MediaService::BufferedMedia;
+            break;
+        case VideoProviderService::EndOfMedia:
+            m_currentMediaState = MediaService::EndOfMedia;
+            break;
+        case VideoProviderService::InvalidMedia:
+            m_currentMediaState = MediaService::InvalidMedia;
+            break;
+    }
+    emit mediaStateChanged(m_currentMediaState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_currentMediaState);
+}
+
+QVector<double> MediaService::spectrum() const
+{
+    return m_spectrum;
+}
+
+void MediaService::updateSpectrum(QVector<double> spectrum)
+{
+    m_spectrum = spectrum;
+    emit spectrumChanged(m_spectrum);
+}
+
+void MediaService::updatePosition(qint64 position)
+{
+    emit positionChanged(position);
+}
+
+void MediaService::updateDuration(qint64 duration)
+{
+    emit durationChanged(duration);
+}
+
+bool MediaService::evaluateUrl(const QString& url)
+{
+    QUrl mediaUrl(url);
+
+    if (!mediaUrl.isValid()) {
+        return false;
+    }
+
+    if (mediaUrl.isLocalFile()) {
+        return true;
+    }
+
+    QNetworkAccessManager networkManager;
+    QNetworkRequest request(mediaUrl);
+    QNetworkReply* reply = networkManager.head(request);
+    QEventLoop loop;
+
+    QObject::connect(reply, &QNetworkReply::finished, &loop, &QEventLoop::quit);
+    loop.exec();
+
+    bool isMediaUrl = (reply->error() == QNetworkReply::NoError);
+
+    reply->deleteLater();
+
+    return isMediaUrl;
+}
+
+void MediaService::audioServiceEndOfMedia()
+{
+    if(!m_unloadingAudioService) {
+        unloadAudioProvider(MediaService::MediaFinished);
+    }
+}
+
+void MediaService::emitEndOfMedia()
+{
+    m_currentMediaState = MediaService::EndOfMedia;
+    emit mediaStateChanged(m_currentMediaState);
+}
+
+void MediaService::changeProvider(MediaService::ProviderServiceType serviceType)
+{
+    if (m_selectedProviderService == serviceType) {
+        return;
+    }
+    if(m_selectedProviderService == MediaService::VideoProvider){
+        unloadVideoProvider(MediaService::ServiceUnloaded);
+    }
+
+    if(m_selectedProviderService == MediaService::AudioProvider){
+        QEventLoop loop;
+        loop.connect(this, &MediaService::audioProviderUnloaded, &loop, &QEventLoop::quit);
+            unloadAudioProvider(MediaService::ServiceUnloaded);
+        loop.exec();
+    }
+
+    m_selectedProviderService = serviceType;
+    emit providerServiceTypeChanged(m_selectedProviderService);
+    qDebug() << "MediaService::changeProvider() providerServiceTypeChanged";
 }
 
 void MediaService::onMainSocketIntentReceived(const QString &type, const QVariantMap &data)
 {
 
     if(type == QStringLiteral("gui.player.media.service.play")) {
-        m_track = data[QStringLiteral("track")].toString();
+        m_receivedUrl = data[QStringLiteral("track")].toString();
         m_repeat = data[QStringLiteral("repeat")].toBool();
 
-        emit playRequested();
+        emit mediaLoadUrlRequested();
     }
 
     if(type == QStringLiteral("gui.player.media.service.pause")) {
-        playerPause();
-        emit pauseRequested();
+        mediaPause();
+        emit mediaPauseRequested();
     }
 
     if(type == QStringLiteral("gui.player.media.service.stop")) {
-        playerStop();
-        emit stopRequested();
+        mediaStop();
+        emit mediaStopRequested();
     }
 
     if(type == QStringLiteral("gui.player.media.service.resume")) {
-        playerContinue();
-        emit resumeRequested();
+        mediaContinue();
+        emit mediaContinueRequested();
     }
 
     if(type == QStringLiteral("gui.player.media.service.set.meta")) {
@@ -372,7 +540,6 @@ void MediaService::onMainSocketIntentReceived(const QString &type, const QVarian
                 m_thumbnail = metaVal;
             }
         }
-
-        emit metaReceived();
+        emit metaDataReceived();
     }
 }
