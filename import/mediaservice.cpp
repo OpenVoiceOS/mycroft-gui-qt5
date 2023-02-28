@@ -128,7 +128,6 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
         }
     }
     m_loadedUrl = url;
-    QUrl url = QUrl::fromUserInput(m_loadedUrl);
     changeProvider(serviceType);
     QTimer::singleShot(1000, this, [this](){
         if(m_selectedProviderService == MediaService::AudioProvider) {
@@ -140,7 +139,8 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
                     loop.exec();
                 }
                 initializeAudioProvider();
-                m_audioProviderService->mediaPlay(url);
+                QUrl audioUrl = QUrl::fromUserInput(m_loadedUrl);
+                m_audioProviderService->mediaPlay(audioUrl);
             }
         }
         if(m_selectedProviderService == MediaService::VideoProvider) {
@@ -153,7 +153,8 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
             QObject::connect(m_videoProviderService, &VideoProviderService::positionChanged, this, &MediaService::updatePosition);
             m_videoProviderService->setVideoSink(m_videoSink);
             m_videoProviderService->setVideoOutput(m_videoOutput);
-            m_videoProviderService->mediaPlay(url);
+            QUrl videoUrl = QUrl::fromUserInput(m_loadedUrl);
+            m_videoProviderService->mediaPlay(videoUrl);
         }
     });
 }
