@@ -131,7 +131,7 @@ void AudioProviderService::notifyBufferingMedia()
 
 void AudioProviderService::notifyBufferedMedia()
 {
-    if(!m_currentMediaState == AudioProviderService::NoMedia){
+    if(m_currentMediaState != AudioProviderService::NoMedia){
         m_currentMediaState = AudioProviderService::BufferedMedia;
         emit mediaStateChanged(m_currentMediaState);
     }

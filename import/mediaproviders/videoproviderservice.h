@@ -72,6 +72,10 @@ public Q_SLOTS:
     void positionUpdated(qint64 position);
     void errorOccurred(QMediaPlayer::Error error);
 
+signals:
+    void signalVideoSinkChanged();
+    void signalVideoOutputChanged();
+
 Q_SIGNALS:
     void playBackStateChanged(VideoProviderService::PlaybackState playbackState);
     void mediaStateChanged(VideoProviderService::MediaState mediaState);

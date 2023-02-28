@@ -120,10 +120,15 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
             emit mediaStateChanged(m_currentMediaState);
             m_currentMediaState = MediaService::NoMedia;
             emit mediaStateChanged(m_currentMediaState);
+
+            m_mediaStateSync.clear();
+            m_mediaStateSync.insert(QStringLiteral("status"), m_currentMediaState);
+            m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_mediaStateSync);
             return;
         }
     }
     m_loadedUrl = url;
+    QUrl url = QUrl::fromUserInput(m_loadedUrl);
     changeProvider(serviceType);
     QTimer::singleShot(1000, this, [this](){
         if(m_selectedProviderService == MediaService::AudioProvider) {
@@ -135,7 +140,7 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
                     loop.exec();
                 }
                 initializeAudioProvider();
-                m_audioProviderService->mediaPlay(m_loadedUrl);
+                m_audioProviderService->mediaPlay(url);
             }
         }
         if(m_selectedProviderService == MediaService::VideoProvider) {
@@ -146,7 +151,6 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
             QObject::connect(m_videoProviderService, &VideoProviderService::playBackStateChanged, this, &MediaService::updatePlaybackStateVideoProvider);
             QObject::connect(m_videoProviderService, &VideoProviderService::durationChanged, this, &MediaService::updateDuration);
             QObject::connect(m_videoProviderService, &VideoProviderService::positionChanged, this, &MediaService::updatePosition);
-            QUrl url = QUrl::fromUserInput(m_loadedUrl);
             m_videoProviderService->setVideoSink(m_videoSink);
             m_videoProviderService->setVideoOutput(m_videoOutput);
             m_videoProviderService->mediaPlay(url);
@@ -169,6 +173,9 @@ void MediaService::mediaStop()
                 loop.exec();
                 m_currentPlaybackState = MediaService::StoppedState;
                 emit playbackStateChanged(m_currentPlaybackState);
+                m_playbackStateSync.clear();
+                m_playbackStateSync.insert(QStringLiteral("state"), m_currentPlaybackState);
+                m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playbackStateSync);
             }
         }
     }
@@ -250,25 +257,25 @@ void MediaService::mediaSeek(qint64 seekValue)
 
 QVariant MediaService::requestServiceInfo(QString &serviceInfoType)
 {
-    if(serviceInfoType == "loadedUrl"){
+    if(serviceInfoType == QStringLiteral("loadedUrl")){
         return m_loadedUrl;
     }
-    if(serviceInfoType == "receivedUrl"){
+    if(serviceInfoType == QStringLiteral("receivedUrl")){
         return m_receivedUrl;
     }
-    if(serviceInfoType == "artist"){
+    if(serviceInfoType == QStringLiteral("artist")){
         return m_artist;
     }
-    if(serviceInfoType == "album"){
+    if(serviceInfoType == QStringLiteral("album")){
         return m_album;
     }
-    if(serviceInfoType == "title"){
+    if(serviceInfoType == QStringLiteral("title")){
         return m_title;
     }
-    if(serviceInfoType == "thumbnail"){
+    if(serviceInfoType == QStringLiteral("thumbnail")){
         return m_thumbnail;
     }
-    if(serviceInfoType == "repeat"){
+    if(serviceInfoType == QStringLiteral("repeat")){
         return m_repeat;
     }
     return false;
@@ -311,7 +318,10 @@ void MediaService::updatePlaybackStateAudioProvider(AudioProviderService::Playba
             break;
     }
     emit playbackStateChanged(m_currentPlaybackState);
-    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playerStateSync)
+
+    m_playbackStateSync.clear();
+    m_playbackStateSync.insert(QStringLiteral("state"), m_currentPlaybackState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playbackStateSync);
 }
 
 void MediaService::updateMediaStateAudioProvider(AudioProviderService::MediaState mediaState)
@@ -343,7 +353,10 @@ void MediaService::updateMediaStateAudioProvider(AudioProviderService::MediaStat
             break;
     }
     emit mediaStateChanged(m_currentMediaState);
-    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_currentMediaState);
+
+    m_mediaStateSync.clear();
+    m_mediaStateSync.insert(QStringLiteral("status"), m_currentMediaState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_mediaStateSync);
 }
 
 void MediaService::updatePlaybackStateVideoProvider(VideoProviderService::PlaybackState playbackState)
@@ -360,7 +373,10 @@ void MediaService::updatePlaybackStateVideoProvider(VideoProviderService::Playba
             break;
     }
     emit playbackStateChanged(m_currentPlaybackState);
-    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playerStateSync)
+
+    m_playbackStateSync.clear();
+    m_playbackStateSync.insert(QStringLiteral("state"), m_currentPlaybackState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.sync.status"), m_playbackStateSync);
 }
 
 void MediaService::updateMediaStateVideoProvider(VideoProviderService::MediaState mediaState)
@@ -393,7 +409,10 @@ void MediaService::updateMediaStateVideoProvider(VideoProviderService::MediaStat
             break;
     }
     emit mediaStateChanged(m_currentMediaState);
-    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_currentMediaState);
+
+    m_mediaStateSync.clear();
+    m_mediaStateSync.insert(QStringLiteral("status"), m_currentMediaState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_mediaStateSync);
 }
 
 QVector<double> MediaService::spectrum() const
@@ -455,12 +474,20 @@ void MediaService::videoServiceEndOfMedia()
 {
     m_currentMediaState = MediaService::EndOfMedia;
     emit mediaStateChanged(m_currentMediaState);
+    
+    m_mediaStateSync.clear();
+    m_mediaStateSync.insert(QStringLiteral("status"), m_currentMediaState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_mediaStateSync);
 }
 
 void MediaService::emitEndOfMedia()
 {
     m_currentMediaState = MediaService::EndOfMedia;
     emit mediaStateChanged(m_currentMediaState);
+    
+    m_mediaStateSync.clear();
+    m_mediaStateSync.insert(QStringLiteral("status"), m_currentMediaState);
+    m_controller->sendRequest(QStringLiteral("gui.player.media.service.current.media.status"), m_mediaStateSync);
 }
 
 void MediaService::changeProvider(MediaService::ProviderServiceType serviceType)

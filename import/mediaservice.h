@@ -175,6 +175,8 @@ private:
     bool m_repeat;
     QVariantMap m_emptyData;
     QVariantMap m_serviceMetaData;
+    QVariantMap m_playbackStateSync;
+    QVariantMap m_mediaStateSync;
 
     // AudioProvider Specific Expose To QML
     QVector<double> m_spectrum;
