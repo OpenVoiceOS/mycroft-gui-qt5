@@ -13,8 +13,11 @@ set(mycroftimport_SRCS
     filereader.cpp
     audiorec.cpp
     mediaservice.cpp
-    thirdparty/fftcalc.cpp
-    thirdparty/fft.cpp
+    mediaproviders/videoproviderservice.cpp
+    mediaproviders/audioproviderservice.cpp
+    mediaproviders/audiostreamdevice.cpp
+    mediaproviders/thirdparty/fftcalc.cpp
+    mediaproviders/thirdparty/fft.cpp
     )
 
 configure_file(controllerconfig.h.in ${CMAKE_CURRENT_BINARY_DIR}/controllerconfig.h)
