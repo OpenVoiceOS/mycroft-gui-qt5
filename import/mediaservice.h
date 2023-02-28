@@ -24,7 +24,10 @@
 #include <QNetworkRequest>
 #include <QNetworkReply>
 #include <QEventLoop>
+
 #include <QVideoSink>
+#include <QQmlEngine>
+
 #include "mycroftcontroller.h"
 #include "mediaproviders/audioproviderservice.h"
 #include "mediaproviders/videoproviderservice.h"
@@ -32,7 +35,6 @@
 class MediaService : public QObject
 {
     Q_OBJECT
-    // export playback state to qml
     Q_PROPERTY(MediaService::MediaState mediaState READ serviceMediaState NOTIFY mediaStateChanged)
     Q_PROPERTY(MediaService::PlaybackState playbackState READ servicePlayBackState NOTIFY playbackStateChanged)
     Q_PROPERTY(QVector<double> spectrum READ spectrum NOTIFY spectrumChanged)
@@ -83,6 +85,10 @@ public:
     bool evaluateUrl(const QString &url);
     Q_INVOKABLE MediaService::PlaybackState servicePlayBackState() const;
     Q_INVOKABLE MediaService::MediaState serviceMediaState() const;
+    QVideoSink* videoSink() const;
+    void setVideoSink(QVideoSink *newVideoSink);
+    QObject* videoOutput() const;
+    void setVideoOutput(QObject *newVideoOutput);
 
     // AudioProvider Specific Expose To QML
     QVector<double> spectrum() const;
@@ -110,7 +116,11 @@ public Q_SLOTS:
     void emitEndOfMedia();
 
     // VideoProvider Specific Expose To QML
-    void setVideoOutput(QString videoObjectName);
+    void videoServiceEndOfMedia();
+
+signals:
+    void videoSinkChanged();
+    void videoOutputChanged();
 
 Q_SIGNALS:
     void playbackStateChanged(MediaService::PlaybackState playbackState);
@@ -150,6 +160,8 @@ private:
     AudioProviderService *m_audioProviderService;
     VideoProviderService *m_videoProviderService;
     UnloadStateReason m_unloadReason;
+    QPointer<QVideoSink> m_videoSink;
+    QPointer<QObject> m_videoOutput;
 
     MycroftController *m_controller;
     void onMainSocketIntentReceived(const QString &type, const QVariantMap &data);

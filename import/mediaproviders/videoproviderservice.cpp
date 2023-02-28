@@ -23,6 +23,10 @@ VideoProviderService::VideoProviderService(QObject *parent)
     m_mediaPlayer = new QMediaPlayer(this);
     m_audioOutput = new QAudioOutput(QMediaDevices::defaultAudioOutput(), this);
     m_mediaPlayer->setAudioOutput(m_audioOutput);
+
+    QAudioDevice info(QMediaDevices::defaultAudioOutput());
+    m_format = info.preferredFormat();
+
     connect(m_mediaPlayer, &QMediaPlayer::durationChanged, this, &VideoProviderService::durationUpdated);
     connect(m_mediaPlayer, &QMediaPlayer::positionChanged, this, &VideoProviderService::positionUpdated);
     connect(m_mediaPlayer, &QMediaPlayer::playbackStateChanged , this, &VideoProviderService::updatePlaybackState);
@@ -34,13 +38,33 @@ VideoProviderService::~VideoProviderService()
 {
     m_mediaPlayer->deleteLater();
     m_audioOutput->deleteLater();
-    qDebug() << "VideoProviderService destroyed";
     emit destroyedService();
+}
+
+QVideoSink *VideoProviderService::videoSink() const
+{
+    return m_videoSink;
+}
+
+void VideoProviderService::setVideoSink(QVideoSink *videoSink)
+{
+    if (videoSink != m_videoSink) {
+        m_videoSink = videoSink;
+        emit signalVideoSinkChanged();
+    }
+}
+
+QObject *VideoProviderService::videoOutput() const
+{
+    return m_videoOutput;
 }
 
 void VideoProviderService::setVideoOutput(QObject *videoOutput)
 {
-    m_mediaPlayer->setVideoOutput(videoOutput);
+    if (videoOutput != m_videoOutput) {
+        m_videoOutput = videoOutput;
+        emit signalVideoOutputChanged();
+    }
 }
 
 void VideoProviderService::syncStates()
@@ -51,10 +75,11 @@ void VideoProviderService::syncStates()
 
 void VideoProviderService::mediaPlay(const QUrl &url)
 {
+    m_currentMediaUrl = url;
+    m_mediaPlayer->setVideoSink(m_videoSink);
+    m_mediaPlayer->setVideoOutput(m_videoOutput);
     m_mediaPlayer->setSource(url);
-    qDebug() << "VideoProviderService::mediaPlay" << "setSource";
     m_mediaPlayer->play();
-    qDebug() << "VideoProviderService::mediaPlay" << "play";
 }
 
 void VideoProviderService::mediaPause()

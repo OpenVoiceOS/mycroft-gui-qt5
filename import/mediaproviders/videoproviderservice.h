@@ -25,6 +25,7 @@
 #include <QAudioOutput>
 #include <QAudioDevice>
 #include <QVideoSink>
+#include <QAudioFormat>
 
 
 class VideoProviderService : public QObject
@@ -58,7 +59,11 @@ public:
     void mediaContinue();
     void mediaRestart();
     void mediaSeek(qint64 seekValue);
+    QVideoSink *videoSink() const;
+    QObject *videoOutput() const;
+    void setVideoSink(QVideoSink *videoSink);
     void setVideoOutput(QObject *videoOutput);
+
 
 public Q_SLOTS:
     void updatePlaybackState(QMediaPlayer::PlaybackState state);
@@ -77,9 +82,12 @@ Q_SIGNALS:
 private:
     VideoProviderService::PlaybackState m_currentPlaybackState;
     VideoProviderService::MediaState m_currentMediaState;
+    QVideoSink *m_videoSink;
+    QObject *m_videoOutput;
     QMediaPlayer *m_mediaPlayer;
     QAudioOutput *m_audioOutput;
     QUrl m_currentMediaUrl;
+    QAudioFormat m_format;
 };
 
 #endif //AUDIOPROVIDERSERVICE_H

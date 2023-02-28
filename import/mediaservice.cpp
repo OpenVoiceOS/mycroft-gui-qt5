@@ -16,8 +16,6 @@
  */
 
 #include "mediaservice.h"
-#include <QDebug>
-
 
 MediaService::MediaService(QObject *parent)
     : QObject(parent),
@@ -63,7 +61,11 @@ void MediaService::unloadAudioProvider(MediaService::UnloadStateReason reason)
 
 void MediaService::unloadVideoProvider(MediaService::UnloadStateReason reason)
 {
-    m_videoProviderService->mediaStop();
+    if(!(m_currentPlaybackState == MediaService::StoppedState)){
+         m_videoProviderService->mediaStop();
+    }
+    setVideoOutput(nullptr);
+    setVideoSink(nullptr);
     m_unloadingVideoService = true;
     m_unloadReason = MediaService::ServiceUnloaded;
     emit videoProviderUnloaded();
@@ -85,10 +87,6 @@ void MediaService::initializeAudioProvider()
 void MediaService::initializeVideoProvider()
 {
     m_videoProviderService = new VideoProviderService(this);
-    QObject::connect(m_videoProviderService, &VideoProviderService::mediaStateChanged, this, &MediaService::updateMediaStateVideoProvider);
-    QObject::connect(m_videoProviderService, &VideoProviderService::playBackStateChanged, this, &MediaService::updatePlaybackStateVideoProvider);
-    QObject::connect(m_videoProviderService, &VideoProviderService::durationChanged, this, &MediaService::updateDuration);
-    QObject::connect(m_videoProviderService, &VideoProviderService::positionChanged, this, &MediaService::updatePosition);
     m_videoServiceProviderInitialized = true;
     emit videoProviderInitialized();
 }
@@ -127,16 +125,10 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
     }
     m_loadedUrl = url;
     changeProvider(serviceType);
-    // Wait for 2 seconds before continuing
-    qDebug() << "Waiting Here Timer For 1 Seconds";
-    QTimer::singleShot(250, this, [this](){
-        qDebug() << "Timer Completed After 1 Seconds";
+    QTimer::singleShot(1000, this, [this](){
         if(m_selectedProviderService == MediaService::AudioProvider) {
-            if(m_currentPlaybackState == MediaService::PlayingState){
-                mediaPause();
-            }
             if(!m_unloadingAudioService) {
-                if(m_audioServiceProviderInitialized && (!m_unloadReason == MediaService::MediaFinished || !m_unloadReason == MediaService::MediaStopped)) {
+                if(m_audioServiceProviderInitialized && (!(m_unloadReason == MediaService::MediaFinished) || !(m_unloadReason == MediaService::MediaStopped))) {
                     QEventLoop loop;
                     connect(this, &MediaService::audioProviderUnloaded, &loop, &QEventLoop::quit);
                     unloadAudioProvider(MediaService::MediaChanged);
@@ -150,11 +142,18 @@ void MediaService::mediaLoadUrl(const QString &url, MediaService::ProviderServic
             if(!m_videoServiceProviderInitialized){
                 initializeVideoProvider();
             }
+            QObject::connect(m_videoProviderService, &VideoProviderService::mediaStateChanged, this, &MediaService::updateMediaStateVideoProvider);
+            QObject::connect(m_videoProviderService, &VideoProviderService::playBackStateChanged, this, &MediaService::updatePlaybackStateVideoProvider);
+            QObject::connect(m_videoProviderService, &VideoProviderService::durationChanged, this, &MediaService::updateDuration);
+            QObject::connect(m_videoProviderService, &VideoProviderService::positionChanged, this, &MediaService::updatePosition);
             QUrl url = QUrl::fromUserInput(m_loadedUrl);
+            m_videoProviderService->setVideoSink(m_videoSink);
+            m_videoProviderService->setVideoOutput(m_videoOutput);
             m_videoProviderService->mediaPlay(url);
         }
     });
 }
+
 
 void MediaService::mediaStop()
 {
@@ -386,7 +385,8 @@ void MediaService::updateMediaStateVideoProvider(VideoProviderService::MediaStat
             m_currentMediaState = MediaService::BufferedMedia;
             break;
         case VideoProviderService::EndOfMedia:
-            m_currentMediaState = MediaService::EndOfMedia;
+            mediaStop();
+            QTimer::singleShot(1000, this, SLOT(videoServiceEndOfMedia()));
             break;
         case VideoProviderService::InvalidMedia:
             m_currentMediaState = MediaService::InvalidMedia;
@@ -451,6 +451,12 @@ void MediaService::audioServiceEndOfMedia()
     }
 }
 
+void MediaService::videoServiceEndOfMedia()
+{
+    m_currentMediaState = MediaService::EndOfMedia;
+    emit mediaStateChanged(m_currentMediaState);
+}
+
 void MediaService::emitEndOfMedia()
 {
     m_currentMediaState = MediaService::EndOfMedia;
@@ -475,7 +481,6 @@ void MediaService::changeProvider(MediaService::ProviderServiceType serviceType)
 
     m_selectedProviderService = serviceType;
     emit providerServiceTypeChanged(m_selectedProviderService);
-    qDebug() << "MediaService::changeProvider() providerServiceTypeChanged";
 }
 
 void MediaService::onMainSocketIntentReceived(const QString &type, const QVariantMap &data)
@@ -542,4 +547,34 @@ void MediaService::onMainSocketIntentReceived(const QString &type, const QVarian
         }
         emit metaDataReceived();
     }
+}
+
+QVideoSink* MediaService::videoSink() const
+{
+    return m_videoSink;
+}
+
+void MediaService::setVideoSink(QVideoSink * newVideoSink)
+{
+	if(m_videoSink == newVideoSink)
+		return;
+
+	m_videoSink = newVideoSink;
+
+	emit videoSinkChanged();
+}
+
+QObject* MediaService::videoOutput() const
+{
+    return m_videoOutput;
+}
+
+void MediaService::setVideoOutput(QObject * newVideoOutput)
+{
+    if(m_videoOutput == newVideoOutput)
+        return;
+
+    m_videoOutput = newVideoOutput;
+
+    emit videoOutputChanged();
 }
