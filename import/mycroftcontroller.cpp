@@ -24,6 +24,7 @@
 #include "controllerconfig.h"
 
 #include <QtGlobal>
+#include <QFile>
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -51,7 +52,7 @@ MycroftController::MycroftController(QObject *parent)
     : QObject(parent),
       m_appSettingObj(new GlobalSettings)
 {
-    m_qt_version_context = QStringLiteral("5");
+    m_qt_version_context = QStringLiteral("6");
     connect(&m_mainWebSocket, &QWebSocket::connected, this,
             [this] () {
                 m_reconnectTimer.stop();
@@ -68,7 +69,6 @@ MycroftController::MycroftController(QObject *parent)
                     #else
                         m_qt_version_context = QStringLiteral("5");
                     #endif
-
                     for (const auto &guiId : m_views.keys()) {
                         sendRequest(QStringLiteral("mycroft.gui.connected"),
                                     QVariantMap({{QStringLiteral("gui_id"), guiId}}),
@@ -102,7 +102,8 @@ MycroftController::MycroftController(QObject *parent)
             if (m_views[guiId]->status() != Open) {
                 qWarning()<<"Retrying to announce gui";
                 sendRequest(QStringLiteral("mycroft.gui.connected"),
-                            QVariantMap({{QStringLiteral("gui_id"), guiId}}), QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
+                            QVariantMap({{QStringLiteral("gui_id"), guiId}}), 
+                            QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
             }
         }
     });
@@ -227,12 +228,15 @@ void MycroftController::onMainSocketMessageReceived(const QString &message)
         audioopt.append(qUtf8Printable(aud_values));
         QByteArray aud_array = QByteArray::fromBase64(audioopt, QByteArray::Base64UrlEncoding);
         QByteArray ret_aud = QByteArray::fromBase64(aud_array);
+        //error: variable has incomplete type 'QFile'
+        // fix: #include <QFile>
+ 
         QFile file(QStringLiteral("/tmp/incoming.wav"));
         file.open(QIODevice::WriteOnly);
         file.write(ret_aud);
         file.close();
         QMediaPlayer *player = new QMediaPlayer;
-        player->setMedia(QUrl::fromLocalFile(QStringLiteral("/tmp/incoming.wav")));
+        player->setSource(QUrl::fromLocalFile(QStringLiteral("/tmp/incoming.wav")));
         player->play();
     }
 
@@ -391,7 +395,8 @@ void MycroftController::registerView(AbstractSkillView *view)
 //TODO: manage view destruction
     if (m_mainWebSocket.state() == QAbstractSocket::ConnectedState) {
         sendRequest(QStringLiteral("mycroft.gui.connected"),
-                    QVariantMap({{QStringLiteral("gui_id"), view->id()}}), QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
+                    QVariantMap({{QStringLiteral("gui_id"), view->id()}}), 
+                    QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
     }
 }
 

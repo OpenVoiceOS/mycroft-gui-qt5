@@ -189,7 +189,7 @@ void AbstractDelegate::contentData_append(QQmlListProperty<QObject> *prop, QObje
     delegate->m_contentData.append(object);
 }
 
-int AbstractDelegate::contentData_count(QQmlListProperty<QObject> *prop)
+qsizetype AbstractDelegate::contentData_count(QQmlListProperty<QObject> *prop)
 {
     AbstractDelegate *delegate = static_cast<AbstractDelegate *>(prop->object);
     if (!delegate) {
@@ -199,7 +199,7 @@ int AbstractDelegate::contentData_count(QQmlListProperty<QObject> *prop)
     return delegate->m_contentData.count();
 }
 
-QObject *AbstractDelegate::contentData_at(QQmlListProperty<QObject> *prop, int index)
+QObject *AbstractDelegate::contentData_at(QQmlListProperty<QObject> *prop, qsizetype index)
 {
     AbstractDelegate *delegate = static_cast<AbstractDelegate *>(prop->object);
     if (!delegate) {
@@ -224,17 +224,21 @@ void AbstractDelegate::contentData_clear(QQmlListProperty<QObject> *prop)
 
 QQmlListProperty<QObject> AbstractDelegate::contentData()
 {
-    return QQmlListProperty<QObject>(this, nullptr,
-                                     contentData_append,
-                                     contentData_count,
-                                     contentData_at,
-                                     contentData_clear);
+    // return QQmlListProperty<QObject>(this, nullptr,
+    //                                  contentData_append,
+    //                                  contentData_count,
+    //                                  contentData_at,
+    //                                  contentData_clear);
+    
+    // Need to convert this to be compatible with Qt 6 and not return nullptr
+    return QQmlListProperty<QObject>(this, nullptr, contentData_append, contentData_count, contentData_at, contentData_clear);
+
 }
 
-void AbstractDelegate::geometryChanged(const QRectF &newGeometry, const QRectF &oldGeometry)
+void AbstractDelegate::geometryChange(const QRectF &newGeometry, const QRectF &oldGeometry)
 {
     syncChildItemsGeometry(newGeometry.size());
-    QQuickItem::geometryChanged(newGeometry, oldGeometry);
+    QQuickItem::geometryChange(newGeometry, oldGeometry);
     emit contentWidthChanged();
     emit contentHeightChanged();
 }

@@ -16,10 +16,10 @@
  *
  */
 
-import QtQuick 2.4
-import QtQuick.Layouts 1.2
-import QtQuick.Controls 2.4 as Controls
-import org.kde.kirigami 2.7 as Kirigami
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15 as Controls
+import org.kde.kirigami 2.19 as Kirigami
 
 
 Item {

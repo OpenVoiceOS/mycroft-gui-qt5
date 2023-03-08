@@ -16,9 +16,9 @@
  */
 
 //DEPRECATED or inherit fom c++ Delegate?
-import QtQuick 2.6
-import QtQuick.Layouts 1.4
-import Mycroft 1.0 as Mycroft
+import QtQuick 2.15
+import QtQuick.Layouts 1.15
+import Mycroft 2.19 as Mycroft
 
 Item {
     id: root

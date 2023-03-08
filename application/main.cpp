@@ -42,7 +42,7 @@
 
 int main(int argc, char *argv[])
 {
-    QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+    //QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     QStringList arguments;
     for (int a = 0; a < argc; ++a) {
@@ -67,6 +67,9 @@ int main(int argc, char *argv[])
 
     qputenv("QT_WAYLAND_FORCE_DPI", parser.value(dpiOption).toLatin1());
 
+    QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
+    QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
+
 #ifdef Q_OS_ANDROID
     QGuiApplication app(argc, argv);
 #else
@@ -89,7 +92,6 @@ int main(int argc, char *argv[])
         parser.showHelp();
         return 0;
     }
-
     QtWebView::initialize();
 
     QQuickView view;

@@ -332,10 +332,21 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         QVariantMap::const_iterator i;
         for (i = data.constBegin(); i != data.constEnd(); ++i) {
             //insert it as a model
-            QList<QVariantMap> list = variantListToOrderedMap(i.value().value<QVariantList>());
+            //QList<QVariantMap> list = variantListToOrderedMap(i.value().value<QVariantList>());
+
+            QVariantList variantList = i.value().toList();
+            QList<QVariantMap> list;
+            if(i.value().userType() != QMetaType::QString) {
+                for (const QVariant &variant : variantList) {
+                    QVariantMap map = variant.toMap();
+                    list.append(map);
+                }
+            }
+
             SessionDataModel *dm = map->value(i.key()).value<SessionDataModel *>();
 
             if (!list.isEmpty()) {
+                qDebug() << "list is not empty";
                 if (!dm) {
                     dm = new SessionDataModel(map);
                     map->insertAndNotify(i.key(), QVariant::fromValue(dm));
@@ -346,6 +357,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
             //insert it as is.
             } else {
+                qDebug() << "inserting as it is";
                 if (dm) {
                     dm->deleteLater();
                 }
@@ -622,7 +634,14 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
             return;
         }
 
-        QList<QVariantMap> list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        // QList<QVariantMap> list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        QVariantList variantList = doc[QStringLiteral("data")].toVariant().toList();
+        QList<QMap<QString, QVariant>> list;
+
+        for (const QVariant &variant : variantList) {
+            QVariantMap map = variant.toMap();
+            list.append(map);
+        }
 
         if (list.isEmpty()) {
             qWarning() << "Error: invalid data in mycroft.session.list.insert:" << doc[QStringLiteral("data")];
@@ -659,7 +678,15 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
             return;
         }
 
-        QList<QVariantMap> list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+        //QList<QVariantMap> list = variantListToOrderedMap(doc[QStringLiteral("data")].toVariant().value<QVariantList>());
+
+        QVariantList variantList = doc[QStringLiteral("data")].toVariant().toList();
+        QList<QMap<QString, QVariant>> list;
+
+        for (const QVariant &variant : variantList) {
+            QVariantMap map = variant.toMap();
+            list.append(map);
+        }
 
         if (list.isEmpty()) {
             qWarning() << "Error: invalid data in mycroft.session.list.insert:" << doc[QStringLiteral("data")];

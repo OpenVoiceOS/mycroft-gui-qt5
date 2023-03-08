@@ -77,6 +77,7 @@ static QObject *mediaServiceSingletonProvider(QQmlEngine *engine, QJSEngine *scr
 
 void MycroftPlugin::registerTypes(const char *uri)
 {
+    // QLatin1String is deprecated in Qt 6, so fix this 
     Q_ASSERT(QLatin1String(uri) == QLatin1String("Mycroft"));
 
     qmlRegisterSingletonType<MycroftController>(uri, 1, 0, "MycroftController", mycroftControllerSingletonProvider);

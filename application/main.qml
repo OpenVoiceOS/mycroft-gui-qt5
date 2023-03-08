@@ -16,15 +16,15 @@
  *
  */
 
-import QtQuick 2.9
-import QtQuick.Layouts 1.3
-import QtQuick.Controls 2.2
-import QtGraphicalEffects 1.0
-import org.kde.kirigami 2.11 as Kirigami
-import QtQuick.Window 2.2
-import Mycroft 1.0 as Mycroft
+import QtQuick 2.15
+import QtQuick.Window 2.15
+import QtQuick.Layouts 1.15
+import QtQuick.Controls 2.15
+import QtQuick.Controls.Material 2.15
+import org.kde.kirigami 2.19 as Kirigami
+import Mycroft 1.0 as Mycroft 
 import org.kde.private.mycroftgui 1.0 as MycroftGui
-import QtQuick.Controls.Material 2.0
+import Qt5Compat.GraphicalEffects
 
 Kirigami.ApplicationWindow {
     id: root
@@ -47,11 +47,6 @@ Kirigami.ApplicationWindow {
             showMaximized()
         }
 
-        //FIXME
-        //if (qinput.visible) {
-        //    qinput.forceActiveFocus();
-        //}
-
         if (singleSkillHome.length > 0 && Mycroft.MycroftController.status === Mycroft.MycroftController.Open) {
             Mycroft.MycroftController.sendRequest(singleSkillHome, {});
         }
@@ -64,19 +59,19 @@ Kirigami.ApplicationWindow {
 
     Connections {
         target: Mycroft.MycroftController
-        onStatusChanged: {
+        function onStatusChanged(status) {
             if (singleSkillHome.length > 0 && Mycroft.MycroftController.status === Mycroft.MycroftController.Open) {
                 Mycroft.MycroftController.sendRequest(singleSkillHome, {});
             }
         }
         
-        onSpeechRequestedChanged: {
+        function onSpeechRequestedChanged(expectingResponse) {
             if(expectingResponse) {
                 micButton.clicked()
             }
         }
         
-        onSkillTimeoutReceived: {
+        function onSkillTimeoutReceived(skillidleid) {
             if(mainView.currentItem.contentItem.skillId() == skillidleid) {
                 root.close()
             }
@@ -85,7 +80,7 @@ Kirigami.ApplicationWindow {
     
     Connections {
         target: keyFilter
-        onGlobalBackReceived: {
+        function onGlobalBackReceived() {
             mainView.currentItem.backRequested()
         }
     }
@@ -94,7 +89,7 @@ Kirigami.ApplicationWindow {
     MycroftGui.SpeechIntent {
         id: speechIntent
         title: "Say something to Mycroft" // TODO i18n
-        onSpeechRecognized: {
+        onSpeechRecognized: (text)=> {
             Mycroft.MycroftController.sendText(text)
         }
         //onRecognitionFailed: console.log("SPEECH FAILED")
@@ -258,7 +253,9 @@ Kirigami.ApplicationWindow {
                 anchors.centerIn: parent
                 text: "start"
                 visible: Mycroft.MycroftController.status == Mycroft.MycroftController.Closed
-                onClicked: Mycroft.MycroftController.start();
+                onClicked: (mouse)=> {
+                    Mycroft.MycroftController.start();
+                }
             }
 
             Mycroft.StatusIndicator {
@@ -301,7 +298,7 @@ Kirigami.ApplicationWindow {
 
                 Connections {
                     target: Mycroft.MycroftController
-                    onIntentRecevied: {
+                    function onIntentRecevied(type, data) {
                         if(type == "recognizer_loop:utterance") {
                             inputQuery.text = data.utterances[0]
                         }
@@ -332,7 +329,7 @@ Kirigami.ApplicationWindow {
                     enabled: !isAndroid && Kirigami.Settings.isMobile ? 1 : 0
                     icon.name: "go-previous"
                     
-                    onClicked:  {
+                    onClicked:(mouse)=> {
                         mainView.currentItem.backRequested()
                     }
                     visible: !isAndroid && Kirigami.Settings.isMobile ? 1 : 0
@@ -350,7 +347,9 @@ Kirigami.ApplicationWindow {
                     focus: false
                     Connections {
                         target: speechIntent
-                        onSpeechRecognized: qinput.text = text
+                        function onSpeechRecognized(text){ 
+                            qinput.text = text
+                        }
                     }
                     onFocusChanged: {
                         if (focus) {
@@ -367,7 +366,7 @@ Kirigami.ApplicationWindow {
                     Layout.rightMargin: Kirigami.Units.smallSpacing
                     icon.name: "audio-input-microphone"
                     
-                    onClicked:  {
+                    onClicked: (mouse)=>  {
                         if(applicationSettings.usesRemoteSTT){
                             audioRecorder.open()
                         } else {

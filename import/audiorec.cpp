@@ -6,7 +6,10 @@
 #include <QDir>
 #include <QDebug>
 #include <QAudioBuffer>
+#include <QAudioDevice>
+#include <QMediaDevices>
 #include <QIODevice>
+#include <QSysInfo>
 
 AudioRec::AudioRec(QObject *parent) :
     QObject(parent),
@@ -17,38 +20,32 @@ AudioRec::AudioRec(QObject *parent) :
 
 void AudioRec::recordTStart()
 {
-//    destinationFile.setFileName(QStringLiteral("/tmp/mycroft_in.raw"));
-//    destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
     QByteArray byteArray;
     QBuffer buffer(&byteArray);
     buffer.open( QIODevice::ReadWrite | QIODevice::Truncate );
-    //connect(&buffer, &QBuffer::bytesWritten, this, &AudioRec::bytesWritten);
     QAudioFormat format;
     format.setSampleRate(8000);
     format.setChannelCount(1);
-    format.setSampleSize(8);
-    format.setCodec(QStringLiteral("audio/pcm"));
-    format.setByteOrder(QAudioFormat::LittleEndian);
-    format.setSampleType(QAudioFormat::UnSignedInt);
+    // format.setSampleSize(8);
+    // format.setCodec(QStringLiteral("audio/pcm"));
+    // format.setByteOrder(QSysInfo::LittleEndian);
+    format.setSampleFormat(QAudioFormat::UInt8);
 
-    QAudioDeviceInfo info = QAudioDeviceInfo::defaultInputDevice();
-      if (!info.isFormatSupported(format)) {
-         qWarning() << "Format is not supported.";
-         format = info.nearestFormat(format);
-     }
+    QAudioDevice info = QMediaDevices::defaultAudioInput();
+    if (!info.isFormatSupported(format)) {
+        qWarning() << "Format is not supported.";
+        format = info.preferredFormat();
+    }
 
-    audio = new QAudioInput(format, this);
-    //audio->start(&destinationFile);
+    audio = new QAudioSource(format, this);
     device = audio->start();
     destinationFile.setFileName(QStringLiteral("/tmp/mycroft_in.raw"));
     destinationFile.open( QIODevice::WriteOnly | QIODevice::Truncate );
     connect(device, &QIODevice::readyRead, this, &AudioRec::captureDataFromDevice);
-    //audio->start();
 }
 
 void AudioRec::recordTStop()
 {
-    qDebug() << "I SHOULD NOT BE HERE";
     audio->stop();
     destinationFile.close();
     emit recordTStatus(QStringLiteral("Completed"));
@@ -82,9 +79,8 @@ void AudioRec::captureDataFromDevice()
 {
     QByteArray inputByteArray = device->readAll();
     destinationFile.write(inputByteArray);
-    const int channelbytes = audio->format().sampleSize() / 8;
-    const int samplebytes = audio->format().channelCount() * channelbytes;
-    const int samplecount = inputByteArray.size() / samplebytes;
+    const int channelbytes = (audio->format().sampleRate() * audio->format().channelCount()) / 8;
+    const int samplecount = inputByteArray.size() / channelbytes;
     quint32 maxvalue= 0;
     quint32 value = 0;
     quint32 amp = 255;
