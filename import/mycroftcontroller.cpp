@@ -148,11 +148,6 @@ void MycroftController::reconnect()
     emit socketStatusChanged();
 }
 
-void MycroftController::startPTTClient()
-{
-    QProcess::startDetached(QStringLiteral("mycroft-gui-ptt-loader"), QStringList());
-}
-
 void MycroftController::onMainSocketMessageReceived(const QString &message)
 {
     auto doc = QJsonDocument::fromJson(message.toUtf8());

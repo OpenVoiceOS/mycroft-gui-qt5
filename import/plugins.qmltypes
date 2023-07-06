@@ -315,7 +315,6 @@ Module {
             name: "sendText"
             Parameter { name: "message"; type: "string" }
         }
-        Method { name: "startPTTClient" }
     }
     Component { name: "QAbstractListModel"; prototype: "QAbstractItemModel" }
     Component {
