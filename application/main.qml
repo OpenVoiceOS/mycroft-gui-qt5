@@ -50,11 +50,7 @@ Kirigami.ApplicationWindow {
         if (singleSkillHome.length > 0 && Mycroft.MycroftController.status === Mycroft.MycroftController.Open) {
             Mycroft.MycroftController.sendRequest(singleSkillHome, {});
         }
-        
-        if(!isAndroid && Kirigami.Settings.isMobile){
-            applicationSettings.usesRemoteSTT = true
-            Mycroft.GlobalSettings.usesRemoteTTS = true
-        }
+
     }
 
     Connections {
@@ -83,18 +79,6 @@ Kirigami.ApplicationWindow {
         function onGlobalBackReceived() {
             mainView.currentItem.backRequested()
         }
-    }
-    
-    // Uses Android's voice popup for speech recognition
-    MycroftGui.SpeechIntent {
-        id: speechIntent
-        title: "Say something to Mycroft" // TODO i18n
-        onSpeechRecognized: (text)=> {
-            Mycroft.MycroftController.sendText(text)
-        }
-        //onRecognitionFailed: console.log("SPEECH FAILED")
-        //onRecognitionCanceled: console.log("SPEECH CANCELED")
-        //onNothingRecognized: console.log("SPEECH NOTHING")
     }
 
     //HACK
@@ -207,37 +191,6 @@ Kirigami.ApplicationWindow {
                     OpacityAnimator {
                         duration: Kirigami.Units.longDuration
                         easing.type: Easing.InQuad
-                    }
-                }
-            }
-
-            Popup {
-                id: audioRecorder
-                width: root.width - (Kirigami.Units.largeSpacing * 2)
-                height: root.height / 2
-                closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutsideParent
-                Kirigami.Theme.colorSet: nightSwitch.checked ? Kirigami.Theme.Complementary : Kirigami.Theme.View
-                parent: root
-                x: (root.width - width) / 2
-                y: (root.height - height) / 2
-                
-                background: Rectangle {
-                    color: Kirigami.Theme.backgroundColor
-                    radius: Kirigami.Units.smallSpacing * 0.25
-                    border.width: 1
-                    Kirigami.Theme.colorSet: nightSwitch.checked ? Kirigami.Theme.Complementary : Kirigami.Theme.View
-                    border.color: Qt.rgba(Kirigami.Theme.disabledTextColor.r, Kirigami.Theme.disabledTextColor.g, Kirigami.Theme.disabledTextColor.b, 0.7)
-                }
-                
-                RemoteStt {
-                    id: remoteSttInstance
-                }
-
-                onOpenedChanged: {
-                    if(audioRecorder.opened){
-                        remoteSttInstance.record = true;
-                    } else {
-                        remoteSttInstance.record = false;
                     }
                 }
             }
@@ -356,24 +309,6 @@ Kirigami.ApplicationWindow {
                             selectAll();
                         }
                     }
-                }
-                
-                ToolButton {
-                    id: micButton
-                    Kirigami.Theme.colorSet: nightSwitch.checked ? Kirigami.Theme.Complementary : Kirigami.Theme.Window
-                    Layout.preferredWidth: handleAnchor.width
-                    Layout.fillHeight: true
-                    Layout.rightMargin: Kirigami.Units.smallSpacing
-                    icon.name: "audio-input-microphone"
-                    
-                    onClicked: (mouse)=>  {
-                        if(applicationSettings.usesRemoteSTT){
-                            audioRecorder.open()
-                        } else {
-                            speechIntent.start()
-                        }
-                    }
-                    visible: speechIntent.supported || applicationSettings.usesRemoteSTT
                 }
             }
             background: Rectangle {

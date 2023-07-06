@@ -1,8 +1,6 @@
 # Set minimum CMake version (required for CMake 3.0 or later)
 cmake_minimum_required(VERSION 3.16.0)
 
-option(BUILD_REMOTE_TTS "Build remote TTS support" OFF)
-option(BUILD_PLASMA_MOBILE "Build remote TTS support" OFF)
 
 set(QT_MIN_VERSION "6.4.0")
 set(KF_MIN_VERSION "5.240.0")

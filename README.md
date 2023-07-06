@@ -15,7 +15,6 @@ _______________________________________________________________________
   + [Virtual environment setup instructions](#virtual-environment-setup-instructions)
 - [Usage](#usage)
   + [Local environment](#local-environment)
-  + [Remote environment](#remote-environment)
 - [Development & Contributing](#development-contributing)
   + [Contributing to Mycroft GUI API](#contributing-to-mycroft-gui-api)
   + [Developing skills with an User Interface](#developing-skills-with-an-user-interface)
@@ -84,57 +83,13 @@ The interactive Installation script supports installation on KDE Neon, K/Ubuntu 
 
 ## Usage
 
-Mycroft GUI can be used on an Local Environment as well as a Remote Environment
-
-### 
-
-### Local Environment
-
-Note: Boot your device or run `./start-mycroft.sh all`
+Note: ovos-core must be running first
 
 1) Invoke using ```mycroft-gui-app``` in any terminal, or Mycroft icon from your desktop application launcher.
 
 2) Click *Start* button in the middle of the window if Autoconnect is disabled
 
 3) Talk to your Mycroft!
-
-### Remote Environment
-
-Note: Remote device / server must have mycroft services running or  `./start-mycroft.sh all` on remote device / server
-
-1. Invoke using `mycroft-gui-app` in any remote terminal session, or Mycroft icon from your remote desktop/platform application launcher.
-
-2. Configuring Mycroft GUI for externally hosted Mycroft-Core:
-   
-   - Click on the hamburger menu in the lower left
-   
-   - Select 'Settings'
-   
-   - Enter the IP address of your device. If your device is at 192.168.2.2, enter 'ws://192.168.2.2'
-   
-   - Close
-
-3. Click *Start* button in the middle of the window if Autoconnect is disabled
-
-4. Talk to your Mycroft!
-
-5. Additional Notes:
-
-   - CAUTION: The Mycroft messagebus is an open websocket with no built-in security measures by default. We strongly recommend that you do not expose the messagebus ports outside a secure LAN/PAN unless you have other security measures in place. 
-   
-   - For Externally Hosted Mycroft-Core, one would require to sync skills, one can simply use the provided sync script from the repository to perform a sync
-     
-     - Run `bash sync_skills.sh 192.168.1.1 [replace with your remote ip] `
-   
-   - For Externally Hosted Mycroft-Core, but sure to disable the firewall on the Raspberry Pi. You can do this via `sudo ufw disable`
-   
-   - Generally, the GUI interaction is managed by an enclosure-specific skill that orchestrates things. For example, the Mark 2 uses skill-mark-2.
-   
-   - Lightweight debugging can be done from Mycroft's CLI. You can see commands being sent to GUI clients by hitting Ctrl+G within the CLI
-   
-   - Multiple GUIs can safely run against a single Mycroft Core instance.
-
-## 
 
 ## Development & Contributing
 

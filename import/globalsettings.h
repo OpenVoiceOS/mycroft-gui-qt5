@@ -32,10 +32,6 @@ class GlobalSettings : public QObject
     Q_OBJECT
     Q_PROPERTY(QString webSocketAddress READ webSocketAddress WRITE setWebSocketAddress NOTIFY webSocketChanged)
     Q_PROPERTY(bool autoConnect READ autoConnect WRITE setAutoConnect NOTIFY autoConnectChanged)
-    Q_PROPERTY(bool usesRemoteTTS READ usesRemoteTTS WRITE setUsesRemoteTTS NOTIFY usesRemoteTTSChanged)
-    Q_PROPERTY(bool displayRemoteConfig READ displayRemoteConfig WRITE setDisplayRemoteConfig NOTIFY displayRemoteConfigChanged)
-    Q_PROPERTY(bool usePTTClient READ usePTTClient WRITE setUsePTTClient NOTIFY usePTTClient)
-    Q_PROPERTY(bool useHivemindProtocol READ useHivemindProtocol WRITE setUseHivemindProtocol NOTIFY useHivemindProtocolChanged)
     Q_PROPERTY(bool useEntryNameSpaceAnimation READ useEntryNameSpaceAnimation WRITE setUseEntryNameSpaceAnimation NOTIFY useEntryNameSpaceAnimationChanged)
     Q_PROPERTY(bool useExitNameSpaceAnimation READ useExitNameSpaceAnimation WRITE setUseExitNameSpaceAnimation NOTIFY useExitNameSpaceAnimationChanged)
     Q_PROPERTY(bool useFocusAnimation READ useFocusAnimation WRITE setUseFocusAnimation NOTIFY useFocusAnimationChanged)
@@ -47,14 +43,6 @@ public:
 
     bool autoConnect() const;
     void setAutoConnect(bool autoconnect);
-    bool usesRemoteTTS() const;
-    void setUsesRemoteTTS(bool usesRemoteTTS);
-    bool displayRemoteConfig() const;
-    void setDisplayRemoteConfig(bool displayRemoteConfig);
-    bool usePTTClient() const;
-    void setUsePTTClient(bool usePttClient);
-    bool useHivemindProtocol() const;
-    void setUseHivemindProtocol(bool useHivemindProtocol);
     bool useEntryNameSpaceAnimation() const;
     void setUseEntryNameSpaceAnimation(bool useEntryNameSpaceAnimation);
     bool useExitNameSpaceAnimation() const;
@@ -67,10 +55,6 @@ public:
 Q_SIGNALS:
     void webSocketChanged();
     void autoConnectChanged();
-    void usesRemoteTTSChanged();
-    void displayRemoteConfigChanged();
-    void usePTTClientChanged();
-    void useHivemindProtocolChanged();
     void useEntryNameSpaceAnimationChanged();
     void useExitNameSpaceAnimationChanged();
     void useFocusAnimationChanged();

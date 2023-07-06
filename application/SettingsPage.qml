@@ -113,26 +113,6 @@ Kirigami.ScrollablePage {
             checked: Mycroft.GlobalSettings.autoConnect
             onCheckedChanged: Mycroft.GlobalSettings.autoConnect = checked
         }
-        
-        Controls.Switch {
-            id: remoteSTTSwitch
-            text: "Remote STT"
-            checked: applicationSettings.usesRemoteSTT
-            onCheckedChanged: applicationSettings.usesRemoteSTT = checked
-            visible: Mycroft.GlobalSettings.displayRemoteConfig
-        }
-        
-        Controls.Switch {
-            text: "Remote TTS"
-            checked: Mycroft.GlobalSettings.usesRemoteTTS
-            onCheckedChanged: Mycroft.GlobalSettings.usesRemoteTTS = checked
-            visible: Mycroft.GlobalSettings.displayRemoteConfig
-        }
 
-        Controls.Switch {
-            text: "Bus Isolation"
-            checked: Mycroft.GlobalSettings.useHivemindProtocol
-            onCheckedChanged: Mycroft.GlobalSettings.useHivemindProtocol = checked
-        }
     }
 }

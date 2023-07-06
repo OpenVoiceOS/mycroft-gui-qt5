@@ -40,17 +40,3 @@ void AppSettings::setDarkMode(bool dark)
     emit darkModeChanged();
 }
 
-bool AppSettings::usesRemoteSTT() const
-{
-    return m_settings.value(QStringLiteral("usesRemoteSTT"), false).toBool();
-}
-
-void AppSettings::setUsesRemoteSTT(bool remote)
-{
-    if (AppSettings::usesRemoteSTT() == remote) {
-        return;
-    }
-
-    m_settings.setValue(QStringLiteral("usesRemoteSTT"), remote);
-    emit usesRemoteSTTChanged();
-}

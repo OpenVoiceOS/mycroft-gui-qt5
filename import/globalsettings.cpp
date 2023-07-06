@@ -40,66 +40,6 @@ void GlobalSettings::setAutoConnect(bool autoConnect)
     emit autoConnectChanged();
 }
 
-bool GlobalSettings::usesRemoteTTS() const
-{
-    return m_settings.value(QStringLiteral("usesRemoteTTS"), false).toBool();
-}
-
-void GlobalSettings::setUsesRemoteTTS(bool usesRemoteTTS)
-{
-    if (GlobalSettings::usesRemoteTTS() == usesRemoteTTS) {
-        return;
-    }
-
-    m_settings.setValue(QStringLiteral("usesRemoteTTS"), usesRemoteTTS);
-    emit usesRemoteTTSChanged();
-}
-
-bool GlobalSettings::displayRemoteConfig() const
-{
-return m_settings.value(QStringLiteral("displayRemoteConfig"), true).toBool();
-}
-
-void GlobalSettings::setDisplayRemoteConfig(bool displayRemoteConfig)
-{
-    if (GlobalSettings::displayRemoteConfig() == displayRemoteConfig) {
-        return;
-    }
-
-    m_settings.setValue(QStringLiteral("displayRemoteConfig"), displayRemoteConfig);
-    emit displayRemoteConfigChanged();
-}
-
-bool GlobalSettings::usePTTClient() const
-{
-    return m_settings.value(QStringLiteral("usePTTClient"), false).toBool();
-}
-
-void GlobalSettings::setUsePTTClient(bool usePTTClient)
-{
-    if (GlobalSettings::usePTTClient() == usePTTClient) {
-        return;
-    }
-
-    m_settings.setValue(QStringLiteral("usePTTClient"), usePTTClient);
-    emit usePTTClientChanged();
-}
-
-bool GlobalSettings::useHivemindProtocol() const
-{
-    return m_settings.value(QStringLiteral("useHivemindProtocol"), false).toBool();
-}
-
-void GlobalSettings::setUseHivemindProtocol(bool useHivemindProtocol)
-{
-    if (GlobalSettings::useHivemindProtocol() == useHivemindProtocol) {
-        return;
-    }
-
-    m_settings.setValue(QStringLiteral("useHivemindProtocol"), useHivemindProtocol);
-    emit useHivemindProtocolChanged();
-}
-
 bool GlobalSettings::useEntryNameSpaceAnimation() const
 {
     return m_settings.value(QStringLiteral("useEntryNameSpaceAnimation"), true).toBool();

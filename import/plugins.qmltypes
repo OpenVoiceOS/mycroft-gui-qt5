@@ -161,10 +161,6 @@ Module {
         exportMetaObjectRevisions: [0]
         Property { name: "webSocketAddress"; type: "string" }
         Property { name: "autoConnect"; type: "bool" }
-        Property { name: "usesRemoteTTS"; type: "bool" }
-        Property { name: "displayRemoteConfig"; type: "bool" }
-        Property { name: "usePTTClient"; type: "bool" }
-        Property { name: "useHivemindProtocol"; type: "bool" }
         Signal { name: "webSocketChanged" }
     }
     Component {
