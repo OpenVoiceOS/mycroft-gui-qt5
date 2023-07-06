@@ -75,8 +75,6 @@ MycroftController::MycroftController(QObject *parent)
                                     QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
                     }
                     m_reannounceGuiTimer.start();
-
-                    sendRequest(QStringLiteral("mycroft.skills.all_loaded"), QVariantMap());
                 } else {
                     if (m_serverReady) {
                         m_serverReady = false;
