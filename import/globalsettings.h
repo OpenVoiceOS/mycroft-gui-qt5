@@ -43,11 +43,7 @@ class GlobalSettings : public QObject
 
 public:
     explicit GlobalSettings(QObject *parent=0);
-#ifndef Q_OS_ANDROID
     SettingPropertyKey(QString, webSocketAddress, setWebSocketAddress, webSocketChanged, QStringLiteral("webSocketAddress"), QStringLiteral("ws://0.0.0.0"))
-#else
-    SettingPropertyKey(QString, webSocketAddress, setWebSocketAddress, webSocketChanged, QStringLiteral("webSocketAddress"), QStringLiteral("ws://104.248.21.254"))
-#endif
 
     bool autoConnect() const;
     void setAutoConnect(bool autoconnect);

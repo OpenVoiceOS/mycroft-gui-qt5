@@ -22,12 +22,6 @@
 #include <QWebSocket>
 #include <QPointer>
 #include <QQuickItem>
-
-#ifdef Q_OS_ANDROID
-#include <QTextToSpeech>
-#include <QQueue>
-#endif
-
 #include <QTimer>
 
 class GlobalSettings;
@@ -122,12 +116,6 @@ private:
     QHash<QString, AbstractSkillView *> m_views;
 
     QHash<QString, QQmlPropertyMap*> m_skillData;
-
-#ifdef Q_OS_ANDROID
-    QTextToSpeech *m_speech;
-    bool m_isExpectingSpeechResponse = false;
-    QQueue<QString> ttsqueue;
-#endif
 
     QString m_qt_version_context;
     bool m_isSpeaking = false;

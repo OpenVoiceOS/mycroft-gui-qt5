@@ -106,22 +106,7 @@ MycroftController::MycroftController(QObject *parent)
                             QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
             }
         }
-    });
-
-#ifdef Q_OS_ANDROID
-    m_speech = new QTextToSpeech(this);
-    connect(m_speech, &QTextToSpeech::stateChanged, this, [this] () {
-        if (!ttsqueue.isEmpty() && m_speech->state() != QTextToSpeech::Speaking) {
-            m_speech->say(ttsqueue.dequeue());
-        }
-        
-        if (ttsqueue.isEmpty() && m_speech->state() != QTextToSpeech::Speaking && m_isExpectingSpeechResponse) {
-            emit speechRequestedChanged(m_isExpectingSpeechResponse);
-            m_isExpectingSpeechResponse = false;
-        }
-    });
-#endif
-
+    })
 }
 
 
