@@ -19,7 +19,10 @@ IF(POLICY CMP0063)
     CMAKE_POLICY(SET CMP0063 NEW)
 ENDIF(POLICY CMP0063)
 
-find_package(ECM 1.6.0 REQUIRED NO_MODULE)
+# TODO - i think the issue is the min version of ECM
+# find_package(ECM 5.240.0 REQUIRED NO_MODULE)  <- from ovos-shell qt6 branch
+# manjaro reports 5.106 via cmake-extras-git
+find_package(ECM 5.106.0 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH} ${ECM_KDE_MODULE_DIR})
 
 include(KDEInstallDirs)
