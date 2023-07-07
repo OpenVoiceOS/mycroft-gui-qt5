@@ -43,18 +43,11 @@ Kirigami.ScrollablePage {
             Layout.fillWidth: true
             text: "Client Information"
         }
-        
-        Controls.Label {
-            id: andappverlabel
-            visible: Kirigami.Settings.isMobile
-            text: !isAndroid && Kirigami.Settings.isMobile ? "Application Version: " + versionNumber : "Android Application Version: " + versionNumber
-            Layout.fillWidth: true
-        }
-        
+
         Controls.Label {
             id: mycroftguiapplabel
-            visible: !Kirigami.Settings.isMobile
-            text: "Mycroft GUI Version: " + versionNumber
+            visible: true
+            text: "OpenVoiceOS - Mycroft GUI Version: " + versionNumber
             Layout.fillWidth: true
         }
         

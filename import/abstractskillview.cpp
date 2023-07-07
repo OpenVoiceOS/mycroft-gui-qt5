@@ -505,7 +505,6 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
             if (!m_translatorsForSkill.contains(skillId)) {
                 QTranslator *translator = new QTranslator(this);
-                // TODO: download translations if skills are remote
                 if (translator->load(QLocale(), skillId, QLatin1String("_"), loader->translationsUrl().path())) {
                     QCoreApplication::installTranslator(translator);
                     m_translatorsForSkill[skillId] = translator;

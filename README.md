@@ -30,21 +30,19 @@ The following guide will provide a set of instructions to get you started with i
 
 The interactive Installation script supports installation on KDE Neon, K/Ubuntu 20.04 & Manjaro Linux, It also supports installation and building on other distributions and platforms but system dependencies will be have to installed manually as mentioned in the Installation Script.
 
-
-
 1) Fetch Repository and Run Installation Script 
    
    ```@bash
     cd ~
-    git clone https://github.com/mycroftai/mycroft-gui
-    cd mycroft-gui
+    git clone https://github.com/OpenVoiceOS/mycroft-gui-qt5
+    cd mycroft-gui-qt5
     bash dev_setup.sh    
    ```
 
 2) Running Mycroft GUI:
    
    ```@bash
-   mycroft-gui-app
+   ovos-gui-app
    ```
 
 ### Virtual Environment Setup Instructions
@@ -73,61 +71,24 @@ The interactive Installation script supports installation on KDE Neon, K/Ubuntu 
 6. Running Mycroft GUI:
    
    ```@bash
-   mycroft-gui-app
+   ovos-gui-app
    ```
 
 ## 
 
 ## Usage
 
-Mycroft GUI can be used on an Local Environment as well as a Remote Environment
+Note: ovos-core must be running first
 
-### 
-
-### Local Environment
-
-Note: Boot your device or run `./start-mycroft.sh all`
-
-1) Invoke using ```mycroft-gui-app``` in any terminal, or Mycroft icon from your desktop application launcher.
+1) Invoke using ```ovos-gui-app``` in any terminal, or Mycroft icon from your desktop application launcher.
 
 2) Click *Start* button in the middle of the window if Autoconnect is disabled
 
 3) Talk to your Mycroft!
 
-### Remote Environment
+4. Additional Notes:
 
-Note: Remote device / server must have mycroft services running or  `./start-mycroft.sh all` on remote device / server
-
-1. Invoke using `mycroft-gui-app` in any remote terminal session, or Mycroft icon from your remote desktop/platform application launcher.
-
-2. Configuring Mycroft GUI for externally hosted Mycroft-Core:
-   
-   - Click on the hamburger menu in the lower left
-   
-   - Select 'Settings'
-   
-   - Enter the IP address of your device. If your device is at 192.168.2.2, enter 'ws://192.168.2.2'
-   
-   - Close
-
-3. Click *Start* button in the middle of the window if Autoconnect is disabled
-
-4. Talk to your Mycroft!
-
-5. Additional Notes:
-
-   - CAUTION: The Mycroft messagebus is an open websocket with no built-in security measures by default. We strongly recommend that you do not expose the messagebus ports outside a secure LAN/PAN unless you have other security measures in place. 
-   
-   - For Externally Hosted Mycroft-Core, one would require to sync skills, one can simply use the provided sync script from the repository to perform a sync
-     
-     - Run `bash sync_skills.sh 192.168.1.1 [replace with your remote ip] `
-   
-   - For Externally Hosted Mycroft-Core, but sure to disable the firewall on the Raspberry Pi. You can do this via `sudo ufw disable`
-   
-   - Generally, the GUI interaction is managed by an enclosure-specific skill that orchestrates things. For example, the Mark 2 uses skill-mark-2.
-   
-   - Lightweight debugging can be done from Mycroft's CLI. You can see commands being sent to GUI clients by hitting Ctrl+G within the CLI
-   
+   - CAUTION: The Mycroft messagebus is an open websocket with no built-in security measures by default. We strongly recommend that you do not expose the messagebus
    - Multiple GUIs can safely run against a single Mycroft Core instance.
 
 ## 
@@ -140,9 +101,7 @@ Users & Developers can contribute in advancement of Mycroft GUI in several ways,
 
 Mycroft GUI API is the protocol layer designed to talk and integrate with Mycroft Core Services, It handles various functions some of which include setting, managing and parsing session data and handling delegate activities for skill instances, API Implementation documentation can be found at:
 
-- [Transport Protocol Documentation](https://github.com/MycroftAI/mycroft-gui/blob/master/transportProtocol.md)
-
-- [Enclosure API Implementation - Mycroft Core](https://github.com/MycroftAI/mycroft-core/blob/dev/mycroft/enclosure/gui.py)
+- [Transport Protocol Documentation](https://github.com/OpenVoiceOS/ovos-gui/blob/dev/protocol.md)
 
 ### Developing Skills With An User Interface
 

@@ -72,7 +72,7 @@ manjaro() {
     echo "Following Packages Will Be Installed: cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base"
     echo ""
     echo "Please Enter Authentication For Installing System Dependencies"
-    yes | sudo pacman -S git cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base
+    sudo pacman -S git cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base
     build_gui   
 }
 
@@ -139,7 +139,7 @@ function build_gui() {
     mkdir build-testing
     fi
     cd build-testing
-    cmake .. -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release   -DKDE_INSTALL_LIBDIR=lib -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
+    cmake .. -DBUILD_WITH_QT6=OFF -DQT_MAJOR_VERSION=5 -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release -DKDE_INSTALL_LIBDIR=lib -DKDE_INSTALL_USE_QT_SYS_PATHS=ON
     make -j4
     sudo make install
     install_lottie
@@ -214,7 +214,7 @@ EOF
         echo ""
     fi    
     echo "Installation complete!"
-    echo "To run, invoke:  mycroft-gui-app"
+    echo "To run, invoke:  ovos-gui-app"
     exit 0
 }
 
@@ -246,7 +246,7 @@ EOF
         echo ""
     fi
     echo "Installation complete!"
-    echo "To run, invoke:  mycroft-gui-app"
+    echo "To run, invoke:  ovos-gui-app"
     exit 0
 }
 
@@ -254,7 +254,7 @@ function skip_config() {
     echo " "
     echo "Skipping Configuration"
     echo "Installation complete!"
-    echo "To run, invoke:  mycroft-gui-app"
+    echo "To run, invoke:  ovos-gui-app"
     exit 0
 }
 

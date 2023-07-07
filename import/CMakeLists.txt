@@ -11,7 +11,6 @@ set(mycroftimport_SRCS
     sessiondatamodel.cpp
     globalsettings.cpp
     filereader.cpp
-    audiorec.cpp
     mediaservice.cpp
     thirdparty/fftcalc.cpp
     thirdparty/fft.cpp
@@ -23,12 +22,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 qt5_add_resources(mycroftimport_SRCS mycroft.qrc)
 
 add_library(mycroftplugin SHARED ${mycroftimport_SRCS} ${RESOURCES})
-
-if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-    set(mycroftplugin_EXTRA_LIBS
-        Qt5::TextToSpeech
-    )
-endif()
 
 target_link_libraries(mycroftplugin
         PUBLIC
