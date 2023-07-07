@@ -106,21 +106,6 @@ MycroftController::MycroftController(QObject *parent)
             }
         }
     });
-
-#ifdef Q_OS_ANDROID
-    m_speech = new QTextToSpeech(this);
-    connect(m_speech, &QTextToSpeech::stateChanged, this, [this] () {
-        if (!ttsqueue.isEmpty() && m_speech->state() != QTextToSpeech::Speaking) {
-            m_speech->say(ttsqueue.dequeue());
-        }
-        
-        if (ttsqueue.isEmpty() && m_speech->state() != QTextToSpeech::Speaking && m_isExpectingSpeechResponse) {
-            emit speechRequestedChanged(m_isExpectingSpeechResponse);
-            m_isExpectingSpeechResponse = false;
-        }
-    });
-#endif
-
 }
 
 
@@ -139,18 +124,9 @@ void MycroftController::start()
             return;
         }
 
-        //don't try to launch mycroft more than once
-        if (!m_mycroftLaunched) {
-            QProcess::startDetached(QStringLiteral("mycroft-gui-core-loader"), QStringList());
-            m_mycroftLaunched = true;
-            if(m_appSettingObj->usePTTClient()){
-                QProcess::startDetached(QStringLiteral("mycroft-gui-ptt-loader"), QStringList());
-            }
-        }
         m_reconnectTimer.start();
         emit socketStatusChanged();
     });
-
     emit socketStatusChanged();
 }
 
@@ -159,10 +135,6 @@ void MycroftController::disconnectSocket()
     qDebug() << "in reconnect";
     m_mainWebSocket.close();
     m_reconnectTimer.stop();
-    if (m_mycroftLaunched) {
-        QProcess::startDetached(QStringLiteral("mycroft-gui-core-stop"), QStringList());
-        m_mycroftLaunched = false;
-    }
     emit socketStatusChanged();
 }
 
@@ -172,11 +144,6 @@ void MycroftController::reconnect()
     m_mainWebSocket.close();
     m_reconnectTimer.start();
     emit socketStatusChanged();
-}
-
-void MycroftController::startPTTClient()
-{
-    QProcess::startDetached(QStringLiteral("mycroft-gui-ptt-loader"), QStringList());
 }
 
 void MycroftController::onMainSocketMessageReceived(const QString &message)
@@ -195,57 +162,12 @@ void MycroftController::onMainSocketMessageReceived(const QString &message)
         return;
     }
 
-    //filter out the noise so we can print debug stuff later without drowning in noise
-    if (type.startsWith(QStringLiteral("enclosure")) || type.startsWith(QStringLiteral("mycroft-date"))) {
-        return;
-    }
-
 #ifdef DEBUG_MYCROFT_MESSAGEBUS
     qDebug() << "type" << type;
 #endif
 
     emit intentRecevied(type, doc[QStringLiteral("data")].toVariant().toMap());
 
-#ifdef Q_OS_ANDROID
-    if (type == QLatin1String("speak") && m_speech->state() != QTextToSpeech::Speaking) {
-        m_speech->say(doc[QStringLiteral("data")][QStringLiteral("utterance")].toString());
-    } else if (type == QLatin1String("speak") && m_speech->state() == QTextToSpeech::Speaking) {
-        ttsqueue.enqueue(doc[QStringLiteral("data")][QStringLiteral("utterance")].toString());
-    }
-    
-    if (type == QLatin1String("mycroft.mic.listen")) {
-        m_isExpectingSpeechResponse = true;
-    }
-#endif
-
-    if (type == QLatin1String("remote.tts.audio") && m_appSettingObj->usesRemoteTTS()) {
-        QString aud = doc[QStringLiteral("data")][QStringLiteral("wave")].toString();
-        auto innerdoc = QJsonDocument::fromJson(aud.toUtf8());
-        QJsonValue qjv = innerdoc[QStringLiteral("py/b64")];
-        QString aud_values = qjv.toString();
-        QByteArray audioopt;
-        audioopt.append(qUtf8Printable(aud_values));
-        QByteArray aud_array = QByteArray::fromBase64(audioopt, QByteArray::Base64UrlEncoding);
-        QByteArray ret_aud = QByteArray::fromBase64(aud_array);
-        QFile file(QStringLiteral("/tmp/incoming.wav"));
-        file.open(QIODevice::WriteOnly);
-        file.write(ret_aud);
-        file.close();
-        QMediaPlayer *player = new QMediaPlayer;
-        player->setMedia(QUrl::fromLocalFile(QStringLiteral("/tmp/incoming.wav")));
-        player->play();
-    }
-
-    // Try catching intent_failure from another method because of issue: https://github.com/MycroftAI/mycroft-core/issues/2490
-    if (type == QLatin1String("active_skill_request")) {         
-        QString skill_id = doc[QStringLiteral("data")][QStringLiteral("skill_id")].toString();
-        if (skill_id == QStringLiteral("fallback-unknown.mycroftai")) {
-            m_isListening = false;
-            emit isListeningChanged();
-            emit notUnderstood();
-        }
-        return;
-    }
     // Instead of intent_failure which is handled by fallback skills, use complete_intent_failure where all skills failed to parse intent
     if (type == QLatin1String("complete_intent_failure")) {
         m_isListening = false;
@@ -363,10 +285,7 @@ void MycroftController::sendBinary(const QString &type, const QJsonObject &data,
     QJsonObject socketObject;
     socketObject[QStringLiteral("type")] = type;
     socketObject[QStringLiteral("data")] = data;
-
-    if(m_appSettingObj->useHivemindProtocol()){
-        socketObject[QStringLiteral("context")] = QJsonObject::fromVariantMap(context);
-    }
+    socketObject[QStringLiteral("context")] = QJsonObject::fromVariantMap(context);
 
     QJsonDocument doc;
     doc.setObject(socketObject);
@@ -376,11 +295,7 @@ void MycroftController::sendBinary(const QString &type, const QJsonObject &data,
 
 void MycroftController::sendText(const QString &message)
 {
-    if(!m_appSettingObj->useHivemindProtocol()){
-        sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("debug_cli")}, {QStringLiteral("destination"), QStringLiteral("skills")}, {QStringLiteral("qt_version"), m_qt_version_context}}));
-    } else {
-        sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("mycroft-gui")}, {QStringLiteral("destination"), QStringLiteral("skills")}, {QStringLiteral("qt_version"), m_qt_version_context}}));
-    }
+    sendRequest(QStringLiteral("recognizer_loop:utterance"), QVariantMap({{QStringLiteral("utterances"), QStringList({message})}}), QVariantMap({{QStringLiteral("source"), QStringLiteral("mycroft-gui")}, {QStringLiteral("destination"), QStringLiteral("skills")}, {QStringLiteral("qt_version"), m_qt_version_context}}));
 }
 
 void MycroftController::registerView(AbstractSkillView *view)

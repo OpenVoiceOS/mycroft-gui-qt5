@@ -22,12 +22,6 @@
 #include <QWebSocket>
 #include <QPointer>
 #include <QQuickItem>
-
-#ifdef Q_OS_ANDROID
-#include <QTextToSpeech>
-#include <QQueue>
-#endif
-
 #include <QTimer>
 
 class GlobalSettings;
@@ -82,7 +76,6 @@ Q_SIGNALS:
     void currentSkillChanged();
     void currentIntentChanged();
     void serverReadyChanged();
-    void speechRequestedChanged(bool expectingResponse);
 
     //signal with nearly all data
     //TODO: remove?
@@ -102,7 +95,6 @@ public Q_SLOTS:
     void sendRequest(const QString &type, const QVariantMap &data, const QVariantMap &context = QVariantMap({}));
     void sendBinary(const QString &type, const QJsonObject &data, const QVariantMap &context = QVariantMap({}));
     void sendText(const QString &message);
-    void startPTTClient();
 
 private:
     explicit MycroftController(QObject *parent = nullptr);
@@ -122,12 +114,6 @@ private:
     QHash<QString, AbstractSkillView *> m_views;
 
     QHash<QString, QQmlPropertyMap*> m_skillData;
-
-#ifdef Q_OS_ANDROID
-    QTextToSpeech *m_speech;
-    bool m_isExpectingSpeechResponse = false;
-    QQueue<QString> ttsqueue;
-#endif
 
     QString m_qt_version_context;
     bool m_isSpeaking = false;

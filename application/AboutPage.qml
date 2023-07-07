@@ -47,7 +47,7 @@ Kirigami.ScrollablePage {
         Controls.Label {
             id: andappverlabel
             visible: Kirigami.Settings.isMobile
-            text: !isAndroid && Kirigami.Settings.isMobile ? "Application Version: " + versionNumber : "Android Application Version: " + versionNumber
+            text: "Application Version: " + versionNumber
             Layout.fillWidth: true
         }
         
