@@ -100,27 +100,6 @@ Module {
         }
     }
     Component {
-        name: "AudioRec"
-        prototype: "QObject"
-        exports: ["Mycroft/AudioRec 1.0"]
-        isCreatable: false
-        isSingleton: true
-        exportMetaObjectRevisions: [0]
-        Signal {
-            name: "recordTStatus"
-            Parameter { name: "recStatus"; type: "string" }
-        }
-        Signal {
-            name: "micAudioLevelChanged"
-            Parameter { name: "micLevel"; type: "double" }
-        }
-        Method { name: "recordTStart" }
-        Method { name: "recordTStop" }
-        Method { name: "readStream" }
-        Method { name: "returnStream" }
-        Method { name: "captureDataFromDevice" }
-    }
-    Component {
         name: "DelegatesModel"
         prototype: "QAbstractListModel"
         exports: ["Mycroft/DelegatesModel 1.0"]
@@ -264,10 +243,6 @@ Module {
         Signal { name: "isListeningChanged" }
         Signal { name: "stopped" }
         Signal { name: "notUnderstood" }
-        Signal {
-            name: "speechRequestedChanged"
-            Parameter { name: "expectingResponse"; type: "bool" }
-        }
         Signal {
             name: "intentRecevied"
             Parameter { name: "type"; type: "string" }

@@ -60,13 +60,7 @@ Kirigami.ApplicationWindow {
                 Mycroft.MycroftController.sendRequest(singleSkillHome, {});
             }
         }
-        
-        function onSpeechRequestedChanged(expectingResponse) {
-            if(expectingResponse) {
-                micButton.clicked()
-            }
-        }
-        
+
         function onSkillTimeoutReceived(skillidleid) {
             if(mainView.currentItem.contentItem.skillId() == skillidleid) {
                 root.close()
@@ -260,7 +254,6 @@ Kirigami.ApplicationWindow {
             }
         }
 
-        //Note: a custom control as ToolBar on Android has a funny color
         footer: Control {
             Kirigami.Theme.colorSet: nightSwitch.checked ? Kirigami.Theme.Complementary : Kirigami.Theme.Window
             visible: !hideTextInput
@@ -279,13 +272,13 @@ Kirigami.ApplicationWindow {
                     Layout.preferredWidth: handleAnchor.width
                     Layout.fillHeight: true
                     Layout.rightMargin: Kirigami.Units.smallSpacing
-                    enabled: !isAndroid && Kirigami.Settings.isMobile ? 1 : 0
+                    enabled: 1
                     icon.name: "go-previous"
                     
                     onClicked:(mouse)=> {
                         mainView.currentItem.backRequested()
                     }
-                    visible: !isAndroid && Kirigami.Settings.isMobile ? 1 : 0
+                    visible: 1
                 }
                 
                 
@@ -298,12 +291,6 @@ Kirigami.ApplicationWindow {
                         Mycroft.MycroftController.sendText(qinput.text)
                     }
                     focus: false
-                    Connections {
-                        target: speechIntent
-                        function onSpeechRecognized(text){ 
-                            qinput.text = text
-                        }
-                    }
                     onFocusChanged: {
                         if (focus) {
                             selectAll();

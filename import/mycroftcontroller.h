@@ -76,7 +76,6 @@ Q_SIGNALS:
     void currentSkillChanged();
     void currentIntentChanged();
     void serverReadyChanged();
-    void speechRequestedChanged(bool expectingResponse);
 
     //signal with nearly all data
     //TODO: remove?

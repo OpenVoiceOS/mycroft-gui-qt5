@@ -11,7 +11,6 @@ set(mycroftimport_SRCS
     sessiondatamodel.cpp
     globalsettings.cpp
     filereader.cpp
-    audiorec.cpp
     mediaservice.cpp
     mediaproviders/videoproviderservice.cpp
     mediaproviders/audioproviderservice.cpp
@@ -26,12 +25,6 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 qt6_add_resources(mycroftimport_SRCS mycroft.qrc)
 
 add_library(mycroftplugin SHARED ${mycroftimport_SRCS} ${RESOURCES})
-
-if (CMAKE_SYSTEM_NAME STREQUAL "Android")
-    set(mycroftplugin_EXTRA_LIBS
-        Qt6::TextToSpeech
-    )
-endif()
 
 target_link_libraries(mycroftplugin
         PUBLIC

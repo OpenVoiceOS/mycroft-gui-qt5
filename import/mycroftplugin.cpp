@@ -27,7 +27,6 @@
 #include "activeskillsmodel.h"
 #include "delegatesmodel.h"
 #include "sessiondatamap.h"
-#include "audiorec.h"
 #include "mediaservice.h"
 
 #include <QQmlEngine>
@@ -59,13 +58,7 @@ static QObject *mycroftControllerSingletonProvider(QQmlEngine *engine, QJSEngine
     return MycroftController::instance();
 }
 
-static QObject *audioRecSingletonProvider(QQmlEngine *engine, QJSEngine *scriptEngine)
-{
-    Q_UNUSED(engine)
-    Q_UNUSED(scriptEngine)
 
-    return new AudioRec;
-}
 
 static QObject *mediaServiceSingletonProvider(QQmlEngine *engine, QJSEngine *scriptEngine)
 {
@@ -83,7 +76,6 @@ void MycroftPlugin::registerTypes(const char *uri)
     qmlRegisterSingletonType<MycroftController>(uri, 1, 0, "MycroftController", mycroftControllerSingletonProvider);
     qmlRegisterSingletonType<GlobalSettings>(uri, 1, 0, "GlobalSettings", globalSettingsSingletonProvider);
     qmlRegisterSingletonType<FileReader>(uri, 1, 0, "FileReader", fileReaderSingletonProvider);
-    qmlRegisterSingletonType<AudioRec>(uri, 1, 0, "AudioRec", audioRecSingletonProvider);
     qmlRegisterSingletonType<MediaService>(uri, 1, 0, "MediaService", mediaServiceSingletonProvider);
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/Units.qml")), uri, 1, 0, "Units");
     qmlRegisterSingletonType(QUrl(QStringLiteral("qrc:/qml/SoundEffects.qml")), uri, 1, 0, "SoundEffects");

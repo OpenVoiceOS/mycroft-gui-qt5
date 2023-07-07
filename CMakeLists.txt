@@ -29,15 +29,6 @@ set(CMAKE_AUTOMOC ON)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Werror")
 
-#this is used for mycroft spawning. It's horrible and should not be needed, but mycroft packaging is questionable at best
-#in any sane world mycroft would install something in $PATH
-#the Android case is a temporary hack, adjust it to where and android app can find
-if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-    set(MYCROFT_CORE_DIR ":")
-else(MYCROFT_CORE_DIR "$HOME/mycroft-core")
-    set(MYCROFT_CORE_DIR "$HOME/mycroft-core")
-endif()
-
 #configure_file(config-mycroft.h.in ${CMAKE_CURRENT_BINARY_DIR}/config-mycroft.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
@@ -57,24 +48,13 @@ else ()
     find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS WebEngine)
 endif()
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Android")
-    find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS
-        AndroidExtras
-        QuickControls2
-        TextToSpeech
-        Svg
-    )
-    find_package(OpenSSL REQUIRED)
-endif()
-
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS I18n)
 
-if(NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
-    find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS Widgets)
-    find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami2 DBusAddons)
-    # find_package(KF5Plasma ${KF5_MIN_VERSION} REQUIRED)
-    # find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED)
-endif()
+
+find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS Widgets)
+find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS Kirigami2 DBusAddons)
+# find_package(KF5Plasma ${KF5_MIN_VERSION} REQUIRED)
+# find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED)
 
 add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0x060F00)
 
@@ -84,6 +64,3 @@ add_subdirectory(application)
 add_subdirectory(icons)
 add_subdirectory(import)
 
-if (BUILD_TESTING AND NOT CMAKE_SYSTEM_NAME STREQUAL "Android")
-    #add_subdirectory(autotests)
-endif()

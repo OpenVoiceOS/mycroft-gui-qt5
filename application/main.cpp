@@ -25,18 +25,9 @@
 #include <QCursor>
 #include <QtWebView/QtWebView>
 
-#ifdef Q_OS_ANDROID
-#include <QGuiApplication>
-#include <QtAndroid>
-#define FLAG_TRANSLUCENT_STATUS 0x04000000
-#define FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS 0x80000000
-#include "keyfilter.h"
-#else
 #include <QApplication>
 #include <KDBusService>
-#endif
 
-#include "speechintent.h"
 #include "appsettings.h"
 #include "version.h"
 
@@ -70,20 +61,11 @@ int main(int argc, char *argv[])
     QCoreApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
     QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGLRhi);
 
-#ifdef Q_OS_ANDROID
-    QGuiApplication app(argc, argv);
-#else
     QApplication app(argc, argv);
-#endif
 
     app.setApplicationName(QStringLiteral("mycroft.gui"));
     app.setOrganizationDomain(QStringLiteral("kde.org"));
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("mycroft")));
-    
-#ifdef Q_OS_ANDROID
-    KeyFilter *kf = new KeyFilter;
-    app.installEventFilter(kf);
-#endif
 
     // NOTE: Have to manually implement a --help option because the parser.addHelpOption() would
     //       be triggered at parser.process() time, but it requires the QApplication. But the
@@ -108,14 +90,9 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("hideTextInput"), parser.isSet(hideTextInputOption));
     engine.rootContext()->setContextProperty(QStringLiteral("globalScreenRotation"), parser.isSet(rotateScreen) ? rotation : 0);
     engine.rootContext()->setContextProperty(QStringLiteral("versionNumber"), QStringLiteral(mycroftguiapp_VERSION_STRING));
-    
-#ifdef Q_OS_ANDROID
-    engine.rootContext()->setContextProperty(QStringLiteral("keyFilter"), kf);
-    engine.rootContext()->setContextProperty(QStringLiteral("isAndroid"), true);
-#else
+
     engine.rootContext()->setContextProperty(QStringLiteral("keyFilter"), 0);
     engine.rootContext()->setContextProperty(QStringLiteral("isAndroid"), false);
-#endif
 
     QString singleSkill = parser.value(skillOption);
     if (singleSkill.endsWith(QStringLiteral(".home"))) {
@@ -127,29 +104,15 @@ int main(int argc, char *argv[])
         engine.rootContext()->setContextProperty(QStringLiteral("singleSkillHome"), QString());
     }
 
-#ifndef Q_OS_ANDROID
     if (parser.isSet(skillOption)) {
         app.setApplicationName(QStringLiteral("mycroft.gui.") + singleSkill);
         KDBusService service(KDBusService::Unique);
     }
-#endif
 
     AppSettings *appSettings = new AppSettings(&view);
     engine.rootContext()->setContextProperty(QStringLiteral("applicationSettings"), appSettings);
 
-    qmlRegisterType<SpeechIntent>("org.kde.private.mycroftgui", 1, 0, "SpeechIntent");
-
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
 
-#ifdef Q_OS_ANDROID
-    QtAndroid::runOnAndroidThread([=]() {
-        QAndroidJniObject window = QtAndroid::androidActivity().callObjectMethod("getWindow", "()Landroid/view/Window;");
-        window.callMethod<void>("addFlags", "(I)V", FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.callMethod<void>("clearFlags", "(I)V", FLAG_TRANSLUCENT_STATUS);
-        window.callMethod<void>("setStatusBarColor", "(I)V", QColor("#303030").rgba());
-        window.callMethod<void>("setNavigationBarColor", "(I)V", QColor("#303030").rgba());
-    });
-#endif
-    
     return app.exec();
 }
