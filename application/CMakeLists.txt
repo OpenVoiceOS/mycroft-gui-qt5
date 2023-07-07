@@ -20,12 +20,12 @@ qt5_add_resources(mycroft_gui_app_SRC
     qml.qrc
 )
 
-add_executable(mycroft-gui-app ${mycroft_gui_app_SRC})
-target_link_libraries(mycroft-gui-app Qt5::Core Qt5::Quick Qt5::WebView ${mycroft_gui_app_EXTRA_LIBS})
+add_executable(ovos-gui-app ${mycroft_gui_app_SRC})
+target_link_libraries(ovos-gui-app Qt5::Core Qt5::Quick Qt5::WebView ${mycroft_gui_app_EXTRA_LIBS})
 
 
-install(TARGETS mycroft-gui-app ${INSTALL_TARGETS_DEFAULT_ARGS})
-install( PROGRAMS ai.mycroft.gui-app.desktop DESTINATION  ${KDE_INSTALL_APPDIR} )
+install(TARGETS ovos-gui-app ${INSTALL_TARGETS_DEFAULT_ARGS})
+install( PROGRAMS ai.ovos.gui-app.desktop DESTINATION  ${KDE_INSTALL_APPDIR} )
 
 
 

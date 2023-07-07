@@ -11,8 +11,8 @@ build/config-mycroft.h
 build/containments/
 build/import/
 build/install_manifest.txt
-build/mycroft-gui-app
-build/mycroft-gui-app_autogen/
+build/ovos-gui-app
+build/ovos-gui-app_autogen/
 build/mycroft-gui-core-loader
 build/org.mycroft.mark2-look-and-feel-metadata.json
 build/org.mycroft.mark2.appdata.xml

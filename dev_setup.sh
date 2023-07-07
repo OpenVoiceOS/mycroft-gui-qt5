@@ -214,7 +214,7 @@ EOF
         echo ""
     fi    
     echo "Installation complete!"
-    echo "To run, invoke:  mycroft-gui-app"
+    echo "To run, invoke:  ovos-gui-app"
     exit 0
 }
 
@@ -246,7 +246,7 @@ EOF
         echo ""
     fi
     echo "Installation complete!"
-    echo "To run, invoke:  mycroft-gui-app"
+    echo "To run, invoke:  ovos-gui-app"
     exit 0
 }
 
@@ -254,7 +254,7 @@ function skip_config() {
     echo " "
     echo "Skipping Configuration"
     echo "Installation complete!"
-    echo "To run, invoke:  mycroft-gui-app"
+    echo "To run, invoke:  ovos-gui-app"
     exit 0
 }
 

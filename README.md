@@ -42,7 +42,7 @@ The interactive Installation script supports installation on KDE Neon, K/Ubuntu 
 2) Running Mycroft GUI:
    
    ```@bash
-   mycroft-gui-app
+   ovos-gui-app
    ```
 
 ### Virtual Environment Setup Instructions
@@ -71,7 +71,7 @@ The interactive Installation script supports installation on KDE Neon, K/Ubuntu 
 6. Running Mycroft GUI:
    
    ```@bash
-   mycroft-gui-app
+   ovos-gui-app
    ```
 
 ## 
@@ -80,7 +80,7 @@ The interactive Installation script supports installation on KDE Neon, K/Ubuntu 
 
 Note: ovos-core must be running first
 
-1) Invoke using ```mycroft-gui-app``` in any terminal, or Mycroft icon from your desktop application launcher.
+1) Invoke using ```ovos-gui-app``` in any terminal, or Mycroft icon from your desktop application launcher.
 
 2) Click *Start* button in the middle of the window if Autoconnect is disabled
 

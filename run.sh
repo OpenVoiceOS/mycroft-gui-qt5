@@ -5,4 +5,4 @@ set -Ee
 bash dev_setup.sh
 
 # And run!
-mycroft-gui-app
+ovos-gui-app
