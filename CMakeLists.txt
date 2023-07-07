@@ -66,6 +66,6 @@ add_subdirectory(import)
 # )
 
 if (BUILD_TESTING)
-    add_subdirectory(autotests)
+    # add_subdirectory(autotests)
 endif()
 

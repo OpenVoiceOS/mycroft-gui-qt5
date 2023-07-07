@@ -6,6 +6,7 @@ PROJECT(mycroftguiapp VERSION "1.0.1")
     SET(mycroft_gui_app_SRC
         main.cpp
         appsettings.cpp
+        speechintent.cpp
     )
 
 ecm_setup_version(PROJECT VERSION_HEADER version.h)

@@ -28,6 +28,7 @@
 #include <QApplication>
 #include <KDBusService>
 
+#include "speechintent.h"
 #include "appsettings.h"
 #include "version.h"
 

@@ -2,8 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Idler.qml</file>
-        <file>HintsDelegate.qml</file>
-        <file>HintsPage.qml</file>
         <file>SettingsPage.qml</file>
         <file>AboutPage.qml</file>
         <file alias="background.png">background.png</file>

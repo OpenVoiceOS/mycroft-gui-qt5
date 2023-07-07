@@ -99,21 +99,6 @@ Kirigami.ApplicationWindow {
 
         actions: [
             Kirigami.Action {
-                text: "Hints"
-                iconName: "help-hint"
-                visible: true
-                checked: pageStack.layers.currentItem.objectName == "hints"
-                onTriggered: {
-                    if (checked) {
-                        pageStack.layers.pop(pageStack.layers.initialItem);
-                    } else if (pageStack.layers.depth > 1) {
-                        pageStack.layers.replace(Qt.resolvedUrl("HintsPage.qml"));
-                    } else {
-                        pageStack.layers.push(Qt.resolvedUrl("HintsPage.qml"));
-                    }
-                }
-            },
-            Kirigami.Action {
                 text: "Settings"
                 iconName: "configure"
                 checked: pageStack.layers.currentItem.objectName == "Settings"
@@ -145,7 +130,7 @@ Kirigami.ApplicationWindow {
         
         Switch {
             id: nightSwitch
-            visible: !Kirigami.Settings.isMobile
+            visible: true
             text: "Dark Mode"
             checked: applicationSettings.darkMode
             onCheckedChanged: applicationSettings.darkMode = checked
@@ -274,13 +259,13 @@ Kirigami.ApplicationWindow {
                     Layout.preferredWidth: handleAnchor.width
                     Layout.fillHeight: true
                     Layout.rightMargin: Kirigami.Units.smallSpacing
-                    enabled: 1
+                    enabled: true
                     icon.name: "go-previous"
                     
                     onClicked:  {
                         mainView.currentItem.backRequested()
                     }
-                    visible: 1
+                    visible: true
                 }
                 
                 

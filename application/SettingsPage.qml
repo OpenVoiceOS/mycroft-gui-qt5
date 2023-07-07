@@ -41,7 +41,7 @@ Kirigami.ScrollablePage {
             font.bold: true
             color: Kirigami.Theme.textColor;
             Layout.fillWidth: true
-            text: "Mycroft Core Address"
+            text: "OpenVoiceOS Messagebus Address"
         }
         
         Controls.Label {
