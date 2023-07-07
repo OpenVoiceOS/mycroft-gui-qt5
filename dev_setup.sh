@@ -72,7 +72,7 @@ manjaro() {
     echo "Following Packages Will Be Installed: cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base"
     echo ""
     echo "Please Enter Authentication For Installing System Dependencies"
-    yes | sudo pacman -S git cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base
+    sudo pacman -S git cmake extra-cmake-modules kio kio-extras plasma-framework qt6-websockets qt6-webview qt6-declarative qt6-multimedia qt6-quickcontrols2 qt6-webengine qt6-base
     build_gui   
 }
 

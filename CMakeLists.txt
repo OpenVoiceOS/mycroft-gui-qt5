@@ -1,7 +1,7 @@
 # Set minimum CMake version (required for CMake 3.0 or later)
 cmake_minimum_required(VERSION 3.16.0)
 
-
+set(QT_MAJOR_VERSION "6")
 set(QT_MIN_VERSION "6.4.0")
 set(KF_MIN_VERSION "5.240.0")
 
@@ -42,11 +42,7 @@ find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     Multimedia
 )
 
-if (QT_MAJOR_VERSION STREQUAL "6")
-    find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS WebEngineQuick)
-else ()
-    find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS WebEngine)
-endif()
+find_package(Qt${QT_MAJOR_VERSION} ${QT_MIN_VERSION} REQUIRED COMPONENTS WebEngineQuick)
 
 find_package(KF6 ${KF_MIN_VERSION} REQUIRED COMPONENTS I18n)
 
