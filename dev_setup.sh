@@ -69,10 +69,10 @@ kubuntu() {
 manjaro() {
     echo "Starting Installation For Manjaro / Arch"
     echo ""
-    echo "Following Packages Will Be Installed: cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base"
+    echo "Following Packages Will Be Installed: cmake extra-cmake-modules kio5 kio-extras plasma-framework5 qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base"
     echo ""
     echo "Please Enter Authentication For Installing System Dependencies"
-    sudo pacman -S git cmake extra-cmake-modules kio kio-extras plasma-framework qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base
+    sudo pacman -S git cmake extra-cmake-modules kio5 kio-extras plasma-framework5 qt5-websockets qt5-webview qt5-declarative qt5-multimedia qt5-quickcontrols2 qt5-webengine qt5-base
     build_gui   
 }
 
