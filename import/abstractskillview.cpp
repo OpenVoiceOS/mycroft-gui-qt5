@@ -271,11 +271,6 @@ QStringList jsonModelToStringList(const QString &key, const QJsonValue &data)
             return items;
         }
         const auto &obj = item.toObject();
-        if (obj.keys().length() != 1 || !obj.contains(key)) {
-            qWarning() << "Error: Item with a wrong key encountered, expected: " << key << "Encountered: " << obj.keys();
-            items.clear();
-            return items;
-        }
         const auto &value = obj.value(key);
         if (!value.isString()) {
             qWarning() << "Error: item in model not a string" << value;
