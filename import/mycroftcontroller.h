@@ -88,6 +88,7 @@ Q_SIGNALS:
     void utteranceManagedBySkill(const QString &skill);
     void skillTimeoutReceived(const QString &skillidleid);
 
+
 public Q_SLOTS:
     void start();
     void disconnectSocket();

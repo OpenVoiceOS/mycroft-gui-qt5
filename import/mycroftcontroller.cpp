@@ -266,11 +266,20 @@ void MycroftController::sendRequest(const QString &type, const QVariantMap &data
         qWarning() << "mycroft connection not open!";
         return;
     }
-    QJsonObject root;
 
+    QJsonObject root;
     root[QStringLiteral("type")] = type;
     root[QStringLiteral("data")] = QJsonObject::fromVariantMap(data);
-    root[QStringLiteral("context")] = QJsonObject::fromVariantMap(context);
+
+    // Ensure context has {"session": {"session_id": "default"}}
+    QJsonObject contextJson = QJsonObject::fromVariantMap(context);
+    if (!contextJson.contains(QStringLiteral("session"))) {
+        QJsonObject session;
+        session[QStringLiteral("session_id")] = QStringLiteral("default");
+        contextJson[QStringLiteral("session")] = session;
+    }
+
+    root[QStringLiteral("context")] = contextJson;
 
     QJsonDocument doc(root);
     m_mainWebSocket.sendTextMessage(QString::fromUtf8(doc.toJson()));
