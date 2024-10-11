@@ -139,4 +139,7 @@ Having trouble or facing issues with Mycroft GUI ? You can use the below guide t
    
    - Run `mycroft-enclosure-client` This will start the client and show Debug() messages on the console.
 
+### Fullscreen Mode for ovos-gui-app 
+On some Linux OSs using Wayland as the Window Manager, the `ovos-qui-app` doesn't natively run in fullscreen mode. One possible solution is to change the `QT_QPA_PLATFORM` variable from `wayland;xcb` to `eglfs` in the systemd unit file located in `/home/<user>/.config/systemd/user`.
+
 ## 
