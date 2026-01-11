@@ -1,6 +1,10 @@
 Mycroft GUI
 ===========
 
+> **WARNING**: This repository is unmaintained, it has been in survival model for a while without a dedicated maintainer, as of 2026 it is completely unsupported and provided for historical reasons only
+
+----------
+
 Graphical User Interface powered by Qt and Kirigami for [Mycroft AI](https://github.com/MycroftAI/mycroft-core)
 
 This repo contains the QT5 code base, for the newest QT6 see [OpenVoiceOS/mycroft-gui-qt6](https://github.com/OpenVoiceOS/mycroft-gui-qt6)
