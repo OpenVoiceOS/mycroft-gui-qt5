@@ -1,5 +1,33 @@
 # SUGGESTIONS — mycroft-gui-qt5
 
+## Completed Work
+
+### ✅ QML Modernization (2026-03-12)
+
+**Status**: COMPLETED
+
+All 17 framework components in `import/qml/` have been modernized to Qt 2.12 / Kirigami 2.14:
+
+**Components Updated**:
+- Delegate.qml, ScrollableDelegate.qml, ProportionalDelegate.qml (deprecated old skill pattern)
+- AudioPlayer.qml, VideoPlayer.qml (deprecated duplicates of system templates)
+- AutoFitLabel.qml, BoxLayout.qml, CardDelegate.qml, MarqueeText.qml
+- PaginatedText.qml, SlideShow.qml, SlidingImage.qml, SoundEffects.qml
+- StatusIndicator.qml, Units.qml, SkillView.qml
+- private/ImageBackground.qml
+
+**Changes Applied**:
+1. Updated all Qt imports from 2.4-2.10 to Qt 2.12
+2. Updated Kirigami imports from 2.4-2.11 to Kirigami 2.14
+3. Added deprecation notices to old skill pattern components
+4. Added comprehensive unit tests (`qml_framework_components_test.cpp`)
+
+**Impact**: Framework now uses consistent, modern Qt versions. Ready for Qt6 migration planning.
+
+See `docs/QML_AUDIT_AND_MIGRATION.md` for full details.
+
+---
+
 ## Evidence-Based Proposals
 
 Each proposal cites source code locations per AGENTS.md requirements.
