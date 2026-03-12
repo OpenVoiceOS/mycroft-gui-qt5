@@ -66,3 +66,12 @@ ecm_add_test(
     Qt5::WebSockets
     Qt5::Multimedia
 )
+
+ecm_add_test(
+  message_routing_test.cpp
+
+  TEST_NAME message_routing_test
+
+  LINK_LIBRARIES
+    Qt5::Test
+)
