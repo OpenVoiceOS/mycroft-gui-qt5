@@ -26,6 +26,15 @@ This guide explains the comprehensive modernization of `mycroft-gui-qt5` and the
 | **Qt5 GUI Contributors** | High (code refactored) | Read CODE_GUIDE.md |
 | **System Integrators** | Low (config options added) | See new TLS configuration section |
 
+### GUI History: Mycroft AI → OpenVoiceOS
+
+- **Original Mycroft AI GUI**: Skills shipped arbitrary QML over the wire at runtime. Fragile and tightly coupled.
+- **OVOS modernization**: Replaced with bundled template system (SYSTEM_text, SYSTEM_weather, etc.). Skills send data, not UI code.
+- **The mycroft gui protocol** (WebSocket port 18181): Implemented by `ovos-legacy-mycroft-gui-plugin`. Both mycroft-gui-qt5 AND mycroft-gui-qt6 connect through the SAME adapter.
+- **"Legacy" naming**: Refers to the protocol's Mycroft AI origins, NOT its current status.
+- **Incompatibility warning**: Pre-OVOS `mycroft-gui` binaries will NOT work with modern OVOS. You must recompile from current source and use the latest ovos-gui service.
+- **Legacy QML example**: `ovos-media` still ships QML files using the old `show_pages` pattern in `ovos_media/qt5/`. The Qt clients already have bundled system templates as the replacement.
+
 ---
 
 ## 📚 Complete Refactoring Summary
@@ -252,10 +261,10 @@ Rectangle {
 
 | Item | Reason | Planned Removal | Workaround |
 |------|--------|-----------------|-----------|
-| Qt5 entirely | EOL, security | 2027 Q1 (post Qt6 stable) | Use mycroft-gui-qt6 |
-| CMakeLists.txt qt5 refs | Clarity | 2027 Q1 | Use cmake-qt6 |
+| Qt5 entirely | Deprecated, not scheduled | No hard removal date | Use mycroft-gui-qt6 when ready |
+| CMakeLists.txt qt5 refs | Cleanup | No hard removal date | Use cmake-qt6 when porting |
 
-**No hard removals in Phase A** — all changes preserve public APIs.
+**No hard removal dates are scheduled.** Qt5 is deprecated but continues to work as long as compilable. All Phase A changes preserve public APIs.
 
 ---
 
@@ -314,14 +323,14 @@ Rectangle {
 ## ⚠️ Known Issues & Workarounds
 
 ### Issue: "Qt5 packages not available on Arch"
-**Status**: Expected (Qt5 approaching EOL, replaced by Qt6)
-**Workaround**: Use mycroft-gui-qt6 on modern Arch systems, or compile from source with Qt6 packages
-**Timeline**: Full Qt6 migration target 2026 Q3
+**Status**: Expected (Arch has moved to Qt6 packages)
+**Workaround**: Use mycroft-gui-qt6 on Arch, or compile Qt5 from source
+**Timeline**: No forced migration date; Qt6 recommended for new deployments
 
 ### Issue: "CMakeLists.txt requires C++17, compiler too old"
 **Status**: Expected (C++11 security concerns, deprecated in Qt5.15)
 **Workaround**: Update compiler (GCC 5+, Clang 3.5+) or use pre-built packages
-**Timeline**: C++11 support officially dropped 2027 Q1
+**Timeline**: C++17 is now required (C++11 was dropped in Phase A2)
 
 ### Issue: "Memory usage still high after update"
 **Status**: Fixed in Phase A3 (4 leaks eliminated)
@@ -388,7 +397,7 @@ Rectangle {
 - [ ] Complete remaining AUDIT.md TODOs (15 remaining)
 
 ### Long Term (2026 Q3-Q4)
-- [ ] Plan Qt5 deprecation timeline (recommend 2027 Q1)
+- [ ] Monitor Qt5 compilability on major distros (deprecation continues, no hard removal scheduled)
 - [ ] Migrate documentation to Qt6-first for new users
 - [ ] Establish mycroft-gui-qt6 as default recommendation
 

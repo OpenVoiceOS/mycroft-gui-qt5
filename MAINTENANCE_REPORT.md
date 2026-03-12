@@ -6,6 +6,20 @@
 
 ---
 
+## 2026-03-12 — Documentation Accuracy Fixes
+
+- **AI Model**: Claude Opus 4.6
+- **Actions Taken**:
+  - Removed false hard removal dates (was "Qt5 entirely EOL 2027 Q1")
+  - Added GUI History section explaining Mycroft AI → OVOS transition
+  - Added incompatibility warning about pre-OVOS binaries
+  - Fixed Qt5 EOL language (deprecated, no scheduled removal)
+  - Added FAQ entries about adapter, compatibility, and deprecation status
+  - Documented ovos-media legacy QML situation
+- **Oversight**: HIGH — corrections based on direct user feedback about inaccuracies
+
+---
+
 ## Executive Summary
 
 Completed **Phase A3 Code Quality & Memory Safety** modernization of mycroft-gui-qt5.

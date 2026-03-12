@@ -114,6 +114,18 @@ See [ovos-gui protocol docs](https://github.com/OpenVoiceOS/ovos-gui/blob/dev/pr
 
 ovos-shell wraps the Mycroft.SkillView QML component from mycroft-gui-qt5 in Kirigami chrome. Any API changes require compatibility verification.
 
+## Will old Mycroft AI GUI binaries work with OVOS?
+No. Pre-OVOS `mycroft-gui` binaries are NOT compatible. You must recompile from the current mycroft-gui-qt5 source and use the latest ovos-gui service + legacy adapter plugin.
+
+## How does mycroft-gui-qt5 connect to OVOS?
+Through the `ovos-legacy-mycroft-gui-plugin` adapter (WebSocket port 18181). This is the SAME adapter used by mycroft-gui-qt6 — both clients connect identically.
+
+## Is Qt5 being removed?
+No hard removal date is scheduled. Qt5 is deprecated but continues to work. Qt6 is recommended for new deployments.
+
+## What does "legacy" mean in the adapter name?
+It refers to the protocol's Mycroft AI origins, not its current status. The mycroft gui protocol is the current, active standard for all Qt GUI clients.
+
 ## See Also
 
 - [QUICK FACTS](QUICK_FACTS.md)
