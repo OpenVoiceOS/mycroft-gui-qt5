@@ -49,19 +49,23 @@ ovos-gui-app
 
 ### System Templates
 
-The GUI includes 21 built-in templates for common UI patterns. See [system-templates.md](./system-templates.md) for the complete inventory and session data keys.
+The GUI includes 25 built-in templates: 20 standard OVOS templates (from `ovos-gui-api-client.PageTemplates`) plus 5 specialized variants (OCP, audio, video).
+
+For complete inventory and session data keys, see:
+- **[TEMPLATE_VALIDATION.md](./TEMPLATE_VALIDATION.md)** — Template coverage audit (cross-referenced with ovos-gui-api-client)
+- **[system-templates.md](./system-templates.md)** — Per-template session data keys and configuration
 
 | Template | Use Case |
 |:---------|:---------|
-| `SYSTEM:Text.qml` | Simple text display |
-| `SYSTEM:Weather.qml` | Weather cards |
-| `SYSTEM:Clock.qml` | Idle clock face |
-| `SYSTEM:Timer.qml` | Timer countdown |
-| `SYSTEM:List.qml` | Scrollable lists |
-| `SYSTEM:Confirm.qml` | Yes/no dialogs |
-| `SYSTEM:Select.qml` | Choice selection |
-| `SYSTEM:AudioPlayer.qml` | Audio playback |
-| `SYSTEM:VideoPlayer.qml` | Video playback |
+| `SYSTEM_text` | Simple text display |
+| `SYSTEM_weather` | Weather cards |
+| `SYSTEM_clock` | Idle clock face |
+| `SYSTEM_timer` | Timer countdown |
+| `SYSTEM_list` | Scrollable lists |
+| `SYSTEM_confirm` | Yes/no dialogs |
+| `SYSTEM_select` | Choice selection |
+| `SYSTEM_media_player` | Audio/video playback |
+| `SYSTEM_ocp_*` | Open Common Player (OCP service) |
 
 ---
 
@@ -112,7 +116,11 @@ sudo make install
 
 ### Transport Protocol
 
-See [transportProtocol.md](./transportProtocol.md) for the WebSocket message format.
+See [PROTOCOL.md](./PROTOCOL.md) for the complete WebSocket message specification (updated for v2.0).
+
+For quick reference and message enumeration, see:
+- **[PROTOCOL_QUICK_REFERENCE.md](./PROTOCOL_QUICK_REFERENCE.md)** — All 23 supported messages with handlers
+- **[MESSAGE_HANDLING_GUIDE.md](./MESSAGE_HANDLING_GUIDE.md)** — Non-Qt developer guide to message routing
 
 Key message types:
 - `mycroft.gui.list.insert` — Add pages to the GUI stack
