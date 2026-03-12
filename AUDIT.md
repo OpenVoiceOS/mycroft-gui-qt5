@@ -349,6 +349,64 @@ Should be declared with `Q_ENUM`.
 
 ---
 
+## Deprecated QML Patterns (QML Audit — 2026-03-12)
+
+### D1: Old Mycroft Skill QML Pattern (DEPRECATED)
+
+**Location**: `autotests/*.qml` (currentweather.qml, forecast.qml, wiki.qml, etc.)
+
+**Pattern**:
+```qml
+import Mycroft 1.0 as Mycroft
+Mycroft.Delegate {
+    // Custom skill UI
+}
+```
+
+**Status**: 🔴 **DEPRECATED** — Skills should NOT ship custom QML
+
+**Why**:
+- Non-portable (Qt5-only)
+- Hard to maintain (scattered across 100+ skill repos)
+- Not themeable (hardcoded UI per skill)
+- Doesn't work with Qt6, web, or other renderers
+
+**Migration Path**:
+- Use `ovos-gui-api-client.PageTemplates` enum instead
+- Skills provide **data only**, not QML
+- Templates defined centrally in mycroft-gui-qt5
+- See [docs/QML_AUDIT_AND_MIGRATION.md](docs/QML_AUDIT_AND_MIGRATION.md) for porting guide
+
+**Action**:
+- [ ] Update skill documentation (ovos-workshop) with migration guide
+- [ ] Create deprecation notice in README
+- [ ] Link to ovos-gui-api-client for skill developers
+
+---
+
+### D2: Framework Component Qt Version Mismatch (MEDIUM PRIORITY)
+
+**Location**: `import/qml/*.qml`
+
+**Issue**: Framework components use Qt 2.4-2.11 (inconsistent; should all be 2.12+)
+
+| File | Current Qt | Target Qt | Status |
+|------|-----------|-----------|--------|
+| AudioPlayer.qml | 2.4 | 2.12 | ⚠️ Duplicates system template |
+| VideoPlayer.qml | 2.4 | 2.12 | ⚠️ Duplicates system template |
+| Delegate.qml | 2.4-2.11 | 2.12 | ⚠️ Part of deprecated pattern |
+| ScrollableDelegate.qml | 2.4 | 2.12 | ⚠️ Old pattern |
+| Others (10 more) | 2.4 | 2.12 | ⚠️ Outdated |
+
+**Action**:
+- [ ] Audit each component in `import/qml/`
+- [ ] Update all to Qt 2.12 minimum
+- [ ] Remove deprecated patterns (Delegate variants)
+- [ ] Consolidate duplicates (AudioPlayer, VideoPlayer)
+- [ ] Add unit tests
+
+---
+
 ## Build/Configuration Issues
 
 ### B1: KF5KIO Lookup
