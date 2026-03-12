@@ -2,6 +2,12 @@
 
 **TL;DR**: mycroft-gui-qt5 supports exactly **23 OVOS bus messages** (whitelist in `import/guibusmessages.h`)
 
+**Protocol Version**: 2.0 (2026-03-12 redesign)
+**Key Change**: Eliminated "mycroft.gui.port" negotiation (see `PROTOCOL_REDESIGN.md`)
+- Qt client connects directly to WebSocket on known port (18181)
+- No more port negotiation messages on core bus
+- Cleaner separation: core bus for skill lifecycle, WebSocket for GUI rendering
+
 ---
 
 ## Message Quick Lookup

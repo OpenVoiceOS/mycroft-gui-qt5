@@ -83,42 +83,30 @@
 
 ## Connection Flow
 
-### 1. Client Announces Presence
+### 1. Client Connects to WebSocket
 
-**From**: Qt client → OVOS Message Bus (via legacy-plugin)
+**Connection**: Qt client → legacy-plugin WebSocket server (port 18181)
+**Protocol**: Direct connection to known port (default 18181, configurable via OVOS_GUI_PORT)
+
+**No port negotiation needed** — port is known at startup.
+
+### 2. Client Announces Presence on WebSocket
+
+**From**: Qt client → WebSocket
 **Message**: `mycroft.gui.connected`
 
 ```json
 {
   "type": "mycroft.gui.connected",
   "data": {
-    "gui_id": "qt-client-001",
     "framework": "qt5",
-    "qt_version": 5
-  },
-  "context": {
-    "source": "mycroft-gui",
-    "destination": ["gui"],
-    "session": {"session_id": "default"}
+    "qt_version": 5,
+    "site_id": "default"
   }
 }
 ```
 
-### 2. Core Responds with Port
-
-**From**: OVOS Core → Qt client (via legacy-plugin)
-**Message**: `mycroft.gui.port`
-
-```json
-{
-  "type": "mycroft.gui.port",
-  "data": {
-    "port": 18181,
-    "gui_id": "qt-client-001",
-    "framework": "qt5"
-  }
-}
-```
+**Purpose**: Identify the client and trigger state synchronization
 
 ### 3. Skill Activation Sequence
 
