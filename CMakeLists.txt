@@ -39,11 +39,12 @@ find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED COMPONENTS
     WebSockets
     WebView
     Multimedia
+    Widgets
+    DBus
 )
 
-find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n)
+find_package(KF5 ${KF5_MIN_VERSION} REQUIRED COMPONENTS I18n Kirigami2 GuiAddons CoreAddons Config ConfigWidgets IconThemes)
 
-find_package(Qt5Widgets ${QT_MIN_VERSION} REQUIRED)
 find_package(KF5Plasma ${KF5_MIN_VERSION} REQUIRED)
 find_package(KF5DBusAddons ${KF5_MIN_VERSION} REQUIRED)
 find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED) # FIXME look for "KIOWidgets" (KRun) explicitly
@@ -53,9 +54,12 @@ find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED) # FIXME look for "KIOWidgets" (
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_ASCII)
 
 add_subdirectory(application)
+add_subdirectory(application/shell)
 add_subdirectory(icons)
 
 add_subdirectory(import)
+add_subdirectory(theme)
+add_subdirectory(schemes)
 
 # SSP: Disabled, now syncing with mycroft-core instance via sync_skills.sh
 #
