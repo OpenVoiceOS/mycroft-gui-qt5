@@ -22,7 +22,10 @@ import QtQuick.Controls 2.2 as Controls
 import org.kde.kirigami 2.11 as Kirigami
 import Mycroft 1.0 as Mycroft
 
-//TODO: should all delegates be a Kirigami Page?
+// Design Decision: Keep AbstractDelegate pattern instead of Kirigami Page
+// AbstractDelegate provides a lightweight, composable base for skill UI without
+// Page-specific overhead (navigation stack, header/footer assumptions).
+// This allows simpler skill layouts while maintaining consistent theming.
 Mycroft.AbstractDelegate {
     id: control
 

@@ -1,8 +1,8 @@
 # Set minimum CMake version (required for CMake 3.0 or later)
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.16)
 
-set(QT_MIN_VERSION "5.9.0")
-set(KF5_MIN_VERSION "5.50.0")
+set(QT_MIN_VERSION "5.15.0")
+set(KF5_MIN_VERSION "5.91.0")
 
 IF(POLICY CMP0048)
     CMAKE_POLICY(SET CMP0048 NEW)
@@ -26,7 +26,7 @@ include(KDECMakeSettings)
 include(ECMInstallIcons)
 set(CMAKE_AUTOMOC ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Werror")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall -Werror")
 
 #configure_file(config-mycroft.h.in ${CMAKE_CURRENT_BINARY_DIR}/config-mycroft.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -48,9 +48,7 @@ find_package(KF5Plasma ${KF5_MIN_VERSION} REQUIRED)
 find_package(KF5DBusAddons ${KF5_MIN_VERSION} REQUIRED)
 find_package(KF5KIO ${KF5_MIN_VERSION} REQUIRED) # FIXME look for "KIOWidgets" (KRun) explicitly
 
-add_definitions(-DQT_DISABLE_DEPRECATED_BEFORE=0)
-
-#add_definitions(-Wno-deprecated)
+# Deprecated API warnings enabled (Qt 5.15+ recommended)
 
 add_definitions(-DQT_NO_URL_CAST_FROM_STRING -DQT_USE_QSTRINGBUILDER -DQT_NO_CAST_TO_ASCII -DQT_NO_CAST_FROM_ASCII)
 
@@ -66,6 +64,6 @@ add_subdirectory(import)
 # )
 
 if (BUILD_TESTING)
-    # add_subdirectory(autotests)
+    add_subdirectory(autotests)
 endif()
 

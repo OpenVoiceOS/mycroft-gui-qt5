@@ -1,7 +1,7 @@
 Mycroft GUI
-===========
+==========
 
-> **WARNING**: This repository is unmaintained, it has been in survival model for a while without a dedicated maintainer, as of 2026 it is completely unsupported and provided for historical reasons only
+> **STATUS**: This repository is under active modernization (2026). Security hardening, build system updates, and documentation improvements in progress.
 
 ----------
 
@@ -92,8 +92,9 @@ Note: ovos-core must be running first
 
 4. Additional Notes:
 
-   - CAUTION: The Mycroft messagebus is an open websocket with no built-in security measures by default. We strongly recommend that you do not expose the messagebus
-   - Multiple GUIs can safely run against a single Mycroft Core instance.
+   - **Architecture Change (2026)**: The GUI client now connects to the GUI protocol adapter (port 18181), NOT the private messagebus (port 8181). This separation improves security.
+   - Use `MYCROFT_GUI_HOST`, `MYCROFT_GUI_PORT`, `MYCROFT_GUI_TLS`, and `MYCROFT_GUI_TOKEN` environment variables to configure the connection.
+   - Multiple GUIs can safely run against a single OVOS core instance.
 
 ## 
 

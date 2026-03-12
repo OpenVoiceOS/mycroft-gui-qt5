@@ -26,7 +26,8 @@ SessionDataModel::SessionDataModel(QObject *parent)
 
 SessionDataModel::~SessionDataModel()
 {
-    //TODO: delete everything
+    m_data.clear();
+    m_roles.clear();
 }
 
 void SessionDataModel::insertData(int position, const QList<QVariantMap> &dataList)

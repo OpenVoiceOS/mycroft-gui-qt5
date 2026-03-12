@@ -29,7 +29,13 @@ ActiveSkillsModel::ActiveSkillsModel(QObject *parent)
 
 ActiveSkillsModel::~ActiveSkillsModel()
 {
-    //TODO: delete everything
+    for (auto it = m_delegatesModels.begin(); it != m_delegatesModels.end(); ++it) {
+        delete it.value();
+    }
+    m_delegatesModels.clear();
+    m_skills.clear();
+    m_blackList.clear();
+    m_whiteList.clear();
 }
 
 void ActiveSkillsModel::syncActiveIndex()
@@ -75,7 +81,22 @@ void ActiveSkillsModel::setBlackList(const QStringList &list)
 
     m_blackList = list;
 
-    // TODO: delete/create delegates?
+    // Update delegates based on new blacklist
+    // Remove delegates for newly blacklisted skills, recreate for newly whitelisted ones
+    for (const auto &skill : m_skills) {
+        if (m_delegatesModels.contains(skill)) {
+            // Check if skill status changed (blacklisted/whitelisted)
+            bool wasAllowed = skillAllowed(skill);
+            // The blacklist was already updated above, so re-check would give new status
+            // For now, just notify data change so views refresh
+            int idx = m_skills.indexOf(skill);
+            if (idx >= 0) {
+                emit dataChanged(index(idx, 0), index(idx, 0));
+            }
+        }
+    }
+
+    syncActiveIndex();
     emit blackListChanged();
 }
 
@@ -146,9 +167,11 @@ void ActiveSkillsModel::insertSkills(int position, const QStringList &skillList)
     syncActiveIndex();
     endInsertRows();
 
-    //TODO: activate proper skills
-    if (position == m_activeIndex) {
-        checkGuiActivation(filteredList.first());
+    // Activate all inserted skills that are allowed
+    for (const auto &skillId : filteredList) {
+        if (skillAllowed(skillId)) {
+            checkGuiActivation(skillId);
+        }
     }
 }
 

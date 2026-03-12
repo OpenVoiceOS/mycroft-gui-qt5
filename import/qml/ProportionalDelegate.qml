@@ -38,7 +38,9 @@ Delegate {
     contentItem: Mycroft.BoxLayout {
         id: layout
 
-        //TODO: default to zero?
+        // Design Decision: Use proportional spacing (root.spacing) instead of zero
+        // Proportional spacing scales with screen size and ensures consistent visual
+        // relationships between UI elements across different device form factors.
         rowSpacing: root.spacing
         columnSpacing: root.spacing
     }
