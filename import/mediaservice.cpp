@@ -102,13 +102,8 @@ void MediaService::processBuffer(QAudioBuffer buffer)
 
         for(int i=0; i<buffer.frameCount(); i++){
             sample[i] = data[i].left/peakValue;
-#ifndef Q_OS_ANDROID
             levelLeft+= abs(data[i].left)/peakValue;
             levelRight+= abs(data[i].right)/peakValue;
-#else
-            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#endif
         }
     }
 
@@ -122,13 +117,8 @@ void MediaService::processBuffer(QAudioBuffer buffer)
             peakValue=UCHAR_MAX;
         for(int i=0; i<buffer.frameCount(); i++){
             sample[i] = data[i].left/peakValue;
-#ifndef Q_OS_ANDROID
             levelLeft+= abs(data[i].left)/peakValue;
             levelRight+= abs(data[i].right)/peakValue;
-#else
-            levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-            levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#endif
         }
     }
 
@@ -141,13 +131,8 @@ void MediaService::processBuffer(QAudioBuffer buffer)
                 sample[i] = 0;
             }
             else{
-#ifndef Q_OS_ANDROID
                 levelLeft+= abs(data[i].left)/peakValue;
                 levelRight+= abs(data[i].right)/peakValue;
-#else
-                levelLeft+= (data[i].left)/peakValue * ((data[i].left)/peakValue>0) - ((data[i].left)/peakValue<0);
-                levelRight+= (data[i].right)/peakValue * ((data[i].right)/peakValue>0) - ((data[i].right)/peakValue<0);
-#endif
             }
         }
     }

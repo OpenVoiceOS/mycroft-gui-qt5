@@ -29,7 +29,6 @@
 #include <QApplication>
 #include <KDBusService>
 
-#include "speechintent.h"
 #include "appsettings.h"
 #include "version.h"
 
@@ -50,14 +49,13 @@ int main(int argc, char *argv[])
 
     auto widthOption = QCommandLineOption(QStringLiteral("width"), QStringLiteral("Width of the screen"), QStringLiteral("width"));
     auto heightOption = QCommandLineOption(QStringLiteral("height"), QStringLiteral("Height of the screen"), QStringLiteral("height"));
-    auto hideTextInputOption = QCommandLineOption(QStringLiteral("hideTextInput"), QStringLiteral("Hide the input box"));
     auto dpiOption = QCommandLineOption(QStringLiteral("dpi"), QStringLiteral("dpi"), QStringLiteral("dpi"));
     auto skillOption = QCommandLineOption(QStringLiteral("skill"), QStringLiteral("Single skill to load"), QStringLiteral("skill"));
     auto maximizeOption = QCommandLineOption(QStringLiteral("maximize"), QStringLiteral("When set, start maximized."));
     auto rotateScreen = QCommandLineOption(QStringLiteral("rotateScreen"), QStringLiteral("When set, rotate the screen by set degrees."), QStringLiteral("degrees"));
     auto shellOption = QCommandLineOption(QStringLiteral("shell"), QStringLiteral("Launch in shell mode (homescreen, notifications, OSD)."));
     auto helpOption = QCommandLineOption(QStringLiteral("help"), QStringLiteral("Show this help message"));
-    parser.addOptions({widthOption, heightOption, hideTextInputOption, skillOption,
+    parser.addOptions({widthOption, heightOption, skillOption,
                        dpiOption, maximizeOption,
                        rotateScreen, shellOption, helpOption});
     parser.process(arguments);
@@ -101,12 +99,8 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("deviceWidth"), width);
     engine.rootContext()->setContextProperty(QStringLiteral("deviceHeight"), height);
     engine.rootContext()->setContextProperty(QStringLiteral("deviceMaximized"), maximize);
-    engine.rootContext()->setContextProperty(QStringLiteral("hideTextInput"), parser.isSet(hideTextInputOption));
     engine.rootContext()->setContextProperty(QStringLiteral("globalScreenRotation"), parser.isSet(rotateScreen) ? rotation : 0);
     engine.rootContext()->setContextProperty(QStringLiteral("versionNumber"), QStringLiteral(mycroftguiapp_VERSION_STRING));
-
-    engine.rootContext()->setContextProperty(QStringLiteral("keyFilter"), 0);
-    engine.rootContext()->setContextProperty(QStringLiteral("isAndroid"), false);
 
     QString singleSkill = parser.value(skillOption);
     if (singleSkill.endsWith(QStringLiteral(".home"))) {
@@ -125,8 +119,6 @@ int main(int argc, char *argv[])
 
     AppSettings *appSettings = new AppSettings(&view);
     engine.rootContext()->setContextProperty(QStringLiteral("applicationSettings"), appSettings);
-
-    qmlRegisterType<SpeechIntent>("org.kde.private.mycroftgui", 1, 0, "SpeechIntent");
 
     if (shellMode) {
         // Shell mode: register additional context properties and load shell QML
