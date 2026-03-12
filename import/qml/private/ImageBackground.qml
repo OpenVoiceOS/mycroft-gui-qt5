@@ -16,11 +16,13 @@
  *
  */
 
-import QtQuick 2.4
-import QtQuick.Layouts 1.2
-import QtQuick.Controls 2.4 as Controls
-import org.kde.kirigami 2.7 as Kirigami
+import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtQuick.Controls 2.12 as Controls
+import org.kde.kirigami 2.14 as Kirigami
 
+// Private: Background image rendering for skill views
+// NOTE: Document purpose and public API if this is used externally
 
 Item {
     id: backgroundImage

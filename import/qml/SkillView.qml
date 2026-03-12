@@ -16,11 +16,11 @@
  *
  */
 
-import QtQuick 2.10
-import QtQuick.Layouts 1.2
-import QtGraphicalEffects 1.0
-import QtQuick.Controls 2.4 as Controls
-import org.kde.kirigami 2.7 as Kirigami
+import QtQuick 2.12
+import QtQuick.Layouts 1.12
+import QtGraphicalEffects 1.12
+import QtQuick.Controls 2.12 as Controls
+import org.kde.kirigami 2.14 as Kirigami
 import Mycroft 1.0 as Mycroft
 
 import "private" as Private
