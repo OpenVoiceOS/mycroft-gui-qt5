@@ -117,12 +117,12 @@ MycroftController::MycroftController(QObject *parent)
                         m_qt_version_context = QStringLiteral("5");
                     #endif
 
-                    for (const auto &guiId : m_views.keys()) {
-                        sendRequest(QStringLiteral("mycroft.gui.connected"),
-                                    QVariantMap({{QStringLiteral("gui_id"), guiId}}),
-                                    QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
-                    }
-                    m_reannounceGuiTimer.start();
+                    // NOTE: PROTOCOL REDESIGN
+                    // The old protocol required sending "mycroft.gui.connected" on the core bus
+                    // to request a port assignment. This has been eliminated (see PROTOCOL_REDESIGN.md).
+                    // Now the Qt client connects directly to the WebSocket on the known port (18181)
+                    // and the legacy plugin WebSocket handler identifies the client when it sends
+                    // "mycroft.gui.connected" on the WebSocket itself.
 
                     sendRequest(QStringLiteral("mycroft.skills.all_loaded"), QVariantMap());
                 } else {
@@ -150,19 +150,10 @@ MycroftController::MycroftController(QObject *parent)
         m_mainWebSocket.open(QUrl(socket));
     });
 
-    m_reannounceGuiTimer.setInterval(10000);
-    connect(&m_reannounceGuiTimer, &QTimer::timeout, this, [this]() {
-        if (m_mainWebSocket.state() != QAbstractSocket::ConnectedState) {
-            return;
-        }
-        for (const auto &guiId : m_views.keys()) {
-            if (m_views[guiId]->status() != Open) {
-                qWarning()<<"Retrying to announce gui";
-                sendRequest(QStringLiteral("mycroft.gui.connected"),
-                            QVariantMap({{QStringLiteral("gui_id"), guiId}}), QVariantMap({{QStringLiteral("qt_version"), m_qt_version_context}}));
-            }
-        }
-    });
+    // NOTE: PROTOCOL REDESIGN
+    // The old "m_reannounceGuiTimer" was used to retry sending "mycroft.gui.connected"
+    // on the core bus for port negotiation. This is no longer needed since the Qt client
+    // connects directly to the WebSocket on the known port (18181).
 }
 
 
