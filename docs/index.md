@@ -130,11 +130,20 @@ Key message types:
 
 ### Creating Visual Skills
 
-See [README.md (OpenVoiceOS Docs)](https://openvoiceos.github.io/ovos-workshop/docs/skills/displaying-information) for the skill-side API (`self.gui.show_text()`, `self.gui.show_page()`, etc.).
+**Important**: Skills should NOT ship custom QML. Use the template-based system instead.
 
-QML developers should reference:
-- [documentation/README.md](./README.md) — Visual skill development guide
-- [documentation/system-templates.md](./system-templates.md) — Template reference
+For skill development, see:
+- [ovos-gui-api-client: GUIInterface](../ovos-gui-api-client/) — Skill-side API reference
+- **[QML_AUDIT_AND_MIGRATION.md](./QML_AUDIT_AND_MIGRATION.md)** — Migration guide from old skill QML to templates
+
+For legacy skills with custom QML:
+- **Porting checklist**: See QML_AUDIT_AND_MIGRATION.md
+- **Template mapping**: Table of which template to use for common use cases
+- **Before/after examples**: Weather, lists, articles
+
+QML component developers should reference:
+- [system-templates.md](./system-templates.md) — Template reference with session data keys
+- [import/qml/](../import/qml/) — Reusable framework components (being modernized)
 
 ---
 
