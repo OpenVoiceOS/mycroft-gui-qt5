@@ -86,6 +86,7 @@ Kirigami.ApplicationWindow {
 
     globalDrawer: Kirigami.GlobalDrawer {
         bannerImageSource: "banner.png"
+        handleVisible: !hideTextInput
         Kirigami.Theme.inherit: false
         Kirigami.Theme.colorSet: applicationSettings.darkMode ? Kirigami.Theme.Complementary : Kirigami.Theme.View
 
@@ -235,6 +236,8 @@ Kirigami.ApplicationWindow {
 
         footer: Control {
             Kirigami.Theme.colorSet: nightSwitch.checked ? Kirigami.Theme.Complementary : Kirigami.Theme.Window
+            visible: !hideTextInput
+            height: hideTextInput ? 0 : implicitHeight
             implicitHeight: contentItem.implicitHeight + topPadding + bottomPadding
             contentItem: RowLayout {
                 Item {
