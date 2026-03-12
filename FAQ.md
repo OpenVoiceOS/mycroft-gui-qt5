@@ -83,6 +83,34 @@ By default, the WebSocket connection is unencrypted (`ws://`). For production:
 - Configurable host, port, and endpoint via environment variables
 - Backward compatible with unencrypted, unauthenticated connections
 
+## Shell Mode
+
+### What is shell mode?
+
+Shell mode launches the GUI as a full-screen touch-optimized desktop environment (EGLFS) for embedded devices without a traditional desktop environment (window manager). It includes a homescreen, notifications, OSD, and quick settings.
+
+### How do I launch shell mode?
+
+```bash
+ovos-gui-app --shell
+```
+
+### When should I use shell mode?
+
+Use shell mode for:
+- Embedded devices without a desktop environment (Mycroft Mark 2, Raspberry Pi, etc.)
+- Devices with integrated touchscreens
+- Systems where the OVOS interface should be the entire user experience
+
+Use regular `ovos-gui-app` for:
+- Desktop/laptop systems with an existing desktop environment
+- Development machines
+- Running OVOS alongside other applications
+
+### What are the hardware requirements for shell mode?
+
+Minimum: 512 MB RAM, 1 GHz CPU, touchscreen or pointer device. Typical embedded systems (Mark 2, Raspberry Pi 3+) work well.
+
 ## Troubleshooting
 
 ### Connection fails with "Host not found"

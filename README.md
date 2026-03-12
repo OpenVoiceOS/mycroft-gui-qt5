@@ -78,11 +78,13 @@ The interactive Installation script supports installation on KDE Neon, K/Ubuntu 
    ovos-gui-app
    ```
 
-## 
+##
 
 ## Usage
 
 Note: ovos-core must be running first
+
+### GUI Mode (Desktop)
 
 1) Invoke using ```ovos-gui-app``` in any terminal, or Mycroft icon from your desktop application launcher.
 
@@ -90,11 +92,37 @@ Note: ovos-core must be running first
 
 3) Talk to your Mycroft!
 
-4. Additional Notes:
+### Shell Mode (Embedded Devices)
 
-   - **Architecture Change (2026)**: The GUI client now connects to the GUI protocol adapter (port 18181), NOT the private messagebus (port 8181). This separation improves security.
-   - Use `MYCROFT_GUI_HOST`, `MYCROFT_GUI_PORT`, `MYCROFT_GUI_TLS`, and `MYCROFT_GUI_TOKEN` environment variables to configure the connection.
-   - Multiple GUIs can safely run against a single OVOS core instance.
+The GUI client includes an integrated **Shell Mode** for headless embedded devices (Mark 2, Raspberry Pi, etc.) that require a complete touch-screen desktop environment without a windowed window manager.
+
+**Launch shell mode:**
+```bash
+ovos-gui-app --shell
+```
+
+**What you get in shell mode:**
+- Full-screen EGLFS display (touch-optimized)
+- Homescreen with widget area
+- System notifications and on-screen display (OSD)
+- Quick settings panel for device controls
+- Direct skill interaction without window management
+
+**When to use shell mode:**
+- Embedded/headless devices without a desktop environment
+- Devices with integrated touchscreens (Mark 2, custom displays)
+- Systems where you want the entire UI to be the OVOS interface
+
+**When NOT to use shell mode:**
+- Desktop/laptop systems with a desktop environment (KDE Plasma, GNOME, etc.)
+- Windowed environments where you want the GUI as one app among many
+- Development machines (use regular `ovos-gui-app`)
+
+### General Configuration
+
+- **Architecture Change (2026)**: The GUI client now connects to the GUI protocol adapter (port 18181), NOT the private messagebus (port 8181). This separation improves security.
+- Use `MYCROFT_GUI_HOST`, `MYCROFT_GUI_PORT`, `MYCROFT_GUI_TLS`, and `MYCROFT_GUI_TOKEN` environment variables to configure the connection.
+- Multiple GUIs can safely run against a single OVOS core instance.
 
 ## 
 
