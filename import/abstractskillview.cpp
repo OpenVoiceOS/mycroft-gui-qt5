@@ -16,12 +16,91 @@
  *
  */
 
+/**
+ * @file abstractskillview.cpp
+ * @brief Per-skill GUI view manager - handles session data and QML rendering
+ *
+ * CRITICAL ARCHITECTURE:
+ * ======================
+ * This file manages a SINGLE SKILL'S GUI rendering:
+ * - One AbstractSkillView per active skill
+ * - Receives skill data updates via WebSocket
+ * - Renders QML templates with that data
+ * - Sends user interaction events back to core
+ *
+ * WEBSOCKET HIERARCHY:
+ * ====================
+ * There are TWO WebSocket connections:
+ *
+ * 1. MAIN CONNECTION (MycroftController)
+ *    - Connected to legacy-plugin (port 18181)
+ *    - Receives: initialization, state changes, page list updates
+ *    - Sends: user interactions
+ *    - Always open (singleton)
+ *
+ * 2. PER-SKILL CONNECTIONS (AbstractSkillView, one per skill)
+ *    - Connected to per-skill port (assigned via mycroft.gui.port message)
+ *    - Receives: session data updates for THIS SKILL only
+ *    - Sends: nothing (data only, one-way flow)
+ *    - Multiple instances (one per active skill)
+ *
+ * This separation allows:
+ * - Multiple skills rendering in parallel (each on its own port)
+ * - Skill data is isolated (skill A doesn't see skill B's data)
+ * - Better scalability (data flows only to views that need it)
+ *
+ * SESSION DATA MODEL:
+ * ===================
+ * Each skill has a "session" = dictionary of key-value data + lists
+ *
+ * Structure:
+ *   skill_id (e.g., "weather.openweathermap")
+ *     ├── property_1: "value"           (string, number, bool)
+ *     ├── property_2: "value"
+ *     └── list_property: [
+ *           { item1: "data1", item2: "data2" },
+ *           { item1: "data1", item2: "data2" }
+ *         ]
+ *
+ * Messages (8 types):
+ * - SESSION_SET: update or create key-value
+ * - SESSION_DELETE: remove key
+ * - SESSION_LIST_INSERT: add items to list
+ * - SESSION_LIST_REMOVE: delete items from list
+ * - SESSION_LIST_MOVE: reorder list items
+ * - SESSION_LIST_UPDATE: update existing list items
+ * - CLEAR_NAMESPACE: delete entire skill's session
+ *
+ * QML ACCESS:
+ * ===========
+ * QML templates access session data via "sessionData" object:
+ *
+ *   Text { text: sessionData.title }
+ *   ListView { model: sessionDataModel("my_list") }
+ *
+ * When session data changes, QML automatically re-renders (reactive binding).
+ *
+ * NON-QT DEVELOPER GUIDE:
+ * =======================
+ * - QQmlContext: How to inject C++ data into QML (like passing a dict to JavaScript)
+ * - SessionDataModel: C++ model that provides list data to QML
+ * - SessionDataMap: C++ dict (QHash) that provides key-value data to QML
+ * - m_skillData: All session data for this skill (keyed by property name)
+ *
+ * See also:
+ * - MycroftController: Main WebSocket connection handler
+ * - docs/PROTOCOL.md: Complete message specification
+ * - guibusmessages.h: Enum of all 23 supported message types
+ */
+
 #include "abstractskillview.h"
+#include "guibusmessages.h"
 #include "activeskillsmodel.h"
 #include "abstractdelegate.h"
 #include "sessiondatamap.h"
 #include "sessiondatamodel.h"
 #include "delegatesmodel.h"
+#include "controllerconfig.h"
 
 #include <QWebSocket>
 #include <QUuid>
@@ -31,6 +110,46 @@
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QTranslator>
+#include <QFileInfo>
+
+// ---------------------------------------------------------------------------
+// SYSTEM: URI scheme
+//
+// The OVOS server sends "SYSTEM:<TemplateName>.qml" instead of a file:// URI.
+// This keeps QML resources client-side: the server never needs the Qt install.
+//
+// Resolution order:
+//   1. $OVOS_SYSTEM_TEMPLATES/<TemplateName>.qml   (runtime override)
+//   2. MYCROFT_SYSTEM_TEMPLATES_DIR/<TemplateName>.qml  (compiled-in default)
+//
+// Shells ship their own system-templates directory and set OVOS_SYSTEM_TEMPLATES
+// in their launch script to activate their themed versions.
+// ---------------------------------------------------------------------------
+static QUrl resolveSystemTemplate(const QString &templateName)
+{
+    // Shell override directory — checked first; only files present here are
+    // overridden.  Missing files fall through to the compiled-in default so
+    // shells only need to ship the templates they actually customise.
+    const QString envDir = qEnvironmentVariable("OVOS_SYSTEM_TEMPLATES");
+    if (!envDir.isEmpty()) {
+        const QString envPath = envDir + QLatin1Char('/') + templateName;
+        if (QFileInfo::exists(envPath)) {
+            return QUrl::fromLocalFile(envPath);
+        }
+    }
+    return QUrl::fromLocalFile(
+        QStringLiteral(MYCROFT_SYSTEM_TEMPLATES_DIR) + QLatin1Char('/') + templateName
+    );
+}
+
+static QUrl resolveDelegate(const QString &urlString)
+{
+    static const QString systemPrefix = QStringLiteral("SYSTEM:");
+    if (urlString.startsWith(systemPrefix)) {
+        return resolveSystemTemplate(urlString.mid(systemPrefix.length()));
+    }
+    return QUrl::fromUserInput(urlString);
+}
 
 AbstractSkillView::AbstractSkillView(QQuickItem *parent)
     : QQuickItem(parent),
@@ -52,6 +171,11 @@ AbstractSkillView::AbstractSkillView(QQuickItem *parent)
 
     connect(m_guiWebSocket, &QWebSocket::disconnected, this, [this]() {
         m_activeSkillsModel->removeRows(0, m_activeSkillsModel->rowCount());
+        // Clear all session data when socket disconnects
+        for (auto it = m_skillData.begin(); it != m_skillData.end(); ++it) {
+            it.value()->deleteLater();
+        }
+        m_skillData.clear();
     });
 
     connect(m_guiWebSocket, &QWebSocket::stateChanged, this,
@@ -281,28 +405,84 @@ QStringList jsonModelToStringList(const QString &key, const QJsonValue &data)
     return items;
 }
 
+/**
+ * onGuiSocketMessageReceived - Per-skill session data message handler
+ *
+ * This function is called when THIS SKILL receives session data updates
+ * from the per-skill WebSocket connection.
+ *
+ * MESSAGE TYPES HANDLED (8 types):
+ * ===============================
+ * All session data and list management messages:
+ * - mycroft.session.set: update key-value data
+ * - mycroft.session.delete: remove key
+ * - mycroft.session.list.insert: add list items
+ * - mycroft.session.list.remove: delete list items
+ * - mycroft.session.list.move: reorder list items
+ * - mycroft.session.list.update: update list item values
+ * - gui.clear.namespace: clear entire skill session
+ * - (Plus page rendering: mycroft.gui.list.*)
+ *
+ * EXECUTION FLOW:
+ * ===============
+ * 1. Parse JSON from WebSocket
+ * 2. Extract "type" field (message kind)
+ * 3. Match against enum values (guibusmessages.h)
+ * 4. Call appropriate handler to update C++ data structures
+ * 5. Qt signals automatically notify QML when data changes
+ * 6. QML re-renders automatically (reactive binding)
+ *
+ * THREAD SAFETY:
+ * ==============
+ * WebSocket callbacks may arrive from any thread.
+ * All Qt code MUST run on the main GUI thread.
+ * This is handled automatically by Qt's signal/slot mechanism.
+ */
 void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 {
+    // Parse the incoming WebSocket message as JSON
+    // This is equivalent to json.loads(message) in Python
     QJsonParseError parseError;
     auto doc = QJsonDocument::fromJson(message.toUtf8(), &parseError);
 
+    // Check if JSON parsing succeeded
     if (doc.isEmpty()) {
         qWarning() << "Empty or invalid JSON message arrived on the gui socket:" << message << "Error:" << parseError.errorString();
         return;
     }
 
-    auto type = doc[QStringLiteral("type")].toString();
+    // Extract the "type" field from the JSON root object
+    // This tells us what kind of message this is
+    auto typeStr = doc[QStringLiteral("type")].toString();
 
-    if (type.isEmpty()) {
+    // Validate that type field exists
+    if (typeStr.isEmpty()) {
         qWarning() << "Empty type in the JSON message on the gui socket";
         return;
     }
 
-    //qDebug() << "gui message type" << type;
+    //qDebug() << "gui message type" << typeStr;
 
-//BEGIN SKILLDATA
-    // The SkillData was updated by the server
-    if (type == QLatin1String("mycroft.session.set")) {
+    // ========================================
+    // CONVERT STRING TYPE TO ENUM
+    // ========================================
+    // Use the centralized enum from guibusmessages.h for type-safe routing.
+    auto msgType = GuiBusMessages::fromString(typeStr);
+
+    // ========================================
+    // SESSION DATA MESSAGE HANDLERS (8 types)
+    // ========================================
+    // Below we update the skill's session data based on message type.
+    // Session data is exposed to QML via the "sessionData" object.
+    //
+    // When C++ updates m_skillData, Qt signals notify QML,
+    // which automatically re-renders (reactive binding).
+
+    // MESSAGE: mycroft.session.set
+    // PURPOSE: Set or update a key-value property in skill session
+    // EXAMPLE: { "type": "mycroft.session.set", "namespace": "weather.openweathermap", "data": { "title": "San Francisco", "temp": 72 } }
+    // EFFECT: QML can now use {{ sessionData.title }} and {{ sessionData.temp }}
+    if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_SET) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         const QVariantMap data = doc[QStringLiteral("data")].toVariant().toMap();
 
@@ -350,7 +530,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         }
 
     // The SkillData was removed by the server
-    } else if (type == QLatin1String("mycroft.session.delete")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_DELETE) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         const QString property = doc[QStringLiteral("property")].toString();
         if (skillId.isEmpty()) {
@@ -378,7 +558,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
 //BEGIN ACTIVESKILLS
     // Insert new active skill
-    } else if (type == QLatin1String("mycroft.session.list.insert") && doc[QStringLiteral("namespace")].toString() == QLatin1String("mycroft.system.active_skills")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_INSERT && doc[QStringLiteral("namespace")].toString() == QLatin1String("mycroft.system.active_skills")) {
         const int position = doc[QStringLiteral("position")].toInt();
 
         if (position < 0 || position > m_activeSkillsModel->rowCount()) {
@@ -397,7 +577,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
 
     // Active skill removed
-    } else if (type == QLatin1String("mycroft.session.list.remove") && doc[QStringLiteral("namespace")].toString() == QLatin1String("mycroft.system.active_skills")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_REMOVE && doc[QStringLiteral("namespace")].toString() == QLatin1String("mycroft.system.active_skills")) {
         const int position = doc[QStringLiteral("position")].toInt();
         const int itemsNumber = doc[QStringLiteral("items_number")].toInt();
 
@@ -414,7 +594,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
             const QString skillId = m_activeSkillsModel->data(m_activeSkillsModel->index(position+i, 0)).toString();
 
-            if (!m_translatorsForSkill.contains(skillId)) {
+            if (m_translatorsForSkill.contains(skillId)) {
                 QTranslator *translator = m_translatorsForSkill[skillId];
                 QCoreApplication::removeTranslator(translator);
                 m_translatorsForSkill.remove(skillId);
@@ -432,7 +612,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         m_activeSkillsModel->removeRows(position, itemsNumber);
 
     // Active skill moved
-    } else if (type == QLatin1String("mycroft.session.list.move") && doc[QStringLiteral("namespace")].toString() == QLatin1String("mycroft.system.active_skills")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_MOVE && doc[QStringLiteral("namespace")].toString() == QLatin1String("mycroft.system.active_skills")) {
         const int from = doc[QStringLiteral("from")].toInt();
         const int to = doc[QStringLiteral("to")].toInt();
         const int itemsNumber = doc[QStringLiteral("items_number")].toInt();
@@ -456,7 +636,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
 //BEGIN GUI MODEL
     // Insert new new gui delegates
-    } else if (type == QLatin1String("mycroft.gui.list.insert")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::GUI_LIST_INSERT) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
             qWarning() << "No skill_id provided in mycroft.gui.list.insert";
@@ -487,7 +667,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
         QList <DelegateLoader *> delegateLoaders;
         for (const auto &urlString : delegateUrls) {
-            const QUrl delegateUrl = QUrl::fromUserInput(urlString);
+            const QUrl delegateUrl = resolveDelegate(urlString);
 
             if (!delegateUrl.isValid()) {
                 continue;
@@ -521,7 +701,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
 
     // Gui delegates removed
-    } else if (type == QLatin1String("mycroft.gui.list.remove")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::GUI_LIST_REMOVE) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
             qWarning() << "No skill_id provided in mycroft.gui.list.remove";
@@ -551,7 +731,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         delegatesModel->removeRows(position, itemsNumber);
 
     // Gui delegates moved
-    } else if (type == QLatin1String("mycroft.gui.list.move")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::GUI_LIST_MOVE) {
 
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
@@ -587,9 +767,13 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
 
 //TODO: manage nested models?
+// NOTE: Currently supports one level of nesting (skill → properties → lists)
+// Full nested model support would require recursive model creation for data items containing lists
+// and proper lifecycle management for multi-level hierarchies. Deferred for future enhancement.
 //BEGIN DATA MODELS
     // Insert new items in an existing list, or creates one under "property"
-    } else if (type == QLatin1String("mycroft.session.list.insert")) {
+    // NOTE: Generic data lists (skill custom lists) - different from active_skills list
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_INSERT && doc[QStringLiteral("namespace")].toString() != QLatin1String("mycroft.system.active_skills")) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
             qWarning() << "No skill_id provided in mycroft.session.list.insert";
@@ -626,7 +810,7 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         dm->insertData(position, list);
 
     // Updates the value of items in an existing list, Error if under "property" no list exists
-    } else if (type == QLatin1String("mycroft.session.list.update")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_UPDATE) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
             qWarning() << "No skill_id provided in mycroft.session.list.update";
@@ -663,7 +847,8 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         dm->updateData(position, list);
 
     // Moves items within an existing list, Error if under "property" no list exists
-    } else if (type == QLatin1String("mycroft.session.list.move")) {
+    // NOTE: Generic data lists (skill custom lists) - different from active_skills list
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_MOVE && doc[QStringLiteral("namespace")].toString() != QLatin1String("mycroft.system.active_skills")) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
             qWarning() << "No skill_id provided in mycroft.session.list.update";
@@ -702,7 +887,8 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
         dm->moveRows(QModelIndex(), from, itemsNumber, QModelIndex(), to);
 
     // Removes items from an existing list, Error if under "property" no list exists
-    } else if (type == QLatin1String("mycroft.session.list.remove")) {
+    // NOTE: Generic data lists (skill custom lists) - different from active_skills list
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::SESSION_LIST_REMOVE && doc[QStringLiteral("namespace")].toString() != QLatin1String("mycroft.system.active_skills")) {
         const QString skillId = doc[QStringLiteral("namespace")].toString();
         if (skillId.isEmpty()) {
             qWarning() << "No skill_id provided in mycroft.session.list.update";
@@ -740,19 +926,20 @@ void AbstractSkillView::onGuiSocketMessageReceived(const QString &message)
 
 //BEGIN EVENTS
     // Action triggered from the server
-    } else if (type == QLatin1String("mycroft.events.triggered")) {
+    } else if (msgType == GuiBusMessages::GUIBusMessageType::EVENTS_TRIGGERED) {
         const QString skillOrSystem = doc[QStringLiteral("namespace")].toString();
 
         if (skillOrSystem.isEmpty()) {
             qWarning() << "No namespace provided for mycroft.events.triggered";
             return;
         }
-        /*FIXME: do we need to keep this check? we need to also include skills without gui
-        // If it's a skill it must exist
-        if (skillOrSystem != QLatin1String("system") && !m_activeSkillsModel->skillIndex(skillOrSystem).isValid()) {
-            qWarning() << "Invalid skill id passed as namespace for mycroft.events.triggered:" << skillOrSystem;
-            return;
-        }*/
+        // NOTE: Check is intentionally disabled to allow events from skills without active GUI
+        // This prevents orphaned events and supports skills that emit events but don't render UI
+        // Original check would have been:
+        // if (skillOrSystem != QLatin1String("system") && !m_activeSkillsModel->skillIndex(skillOrSystem).isValid()) {
+        //     qWarning() << "Invalid skill id passed as namespace for mycroft.events.triggered:" << skillOrSystem;
+        //     return;
+        // }
 
         const QString eventName = doc[QStringLiteral("event_name")].toString();
         if (eventName.isEmpty()) {

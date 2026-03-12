@@ -15,8 +15,8 @@
  *
  */
 
-import QtQuick 2.4
-import org.kde.kirigami 2.4 as Kirigami
+import QtQuick 2.12
+import org.kde.kirigami 2.14 as Kirigami
 
 /**
  * Contains an image that will slowly scroll in order to be shown completely

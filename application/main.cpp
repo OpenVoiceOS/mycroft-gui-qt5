@@ -1,6 +1,7 @@
 /*
  * Copyright 2018 by Marco Martin <mart@kde.org>
  * Copyright 2018 David Edmundson <davidedmundson@kde.org>
+ * Copyright 2020 Aditya Mehra <Aix.m@outlook.com>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +29,12 @@
 #include <QApplication>
 #include <KDBusService>
 
-#include "speechintent.h"
 #include "appsettings.h"
 #include "version.h"
+
+// Shell mode plugins
+#include "shell/plugins/EnvironmentSummary.h"
+#include "shell/plugins/ResetOperations.h"
 
 int main(int argc, char *argv[])
 {
@@ -45,15 +49,16 @@ int main(int argc, char *argv[])
 
     auto widthOption = QCommandLineOption(QStringLiteral("width"), QStringLiteral("Width of the screen"), QStringLiteral("width"));
     auto heightOption = QCommandLineOption(QStringLiteral("height"), QStringLiteral("Height of the screen"), QStringLiteral("height"));
-    auto hideTextInputOption = QCommandLineOption(QStringLiteral("hideTextInput"), QStringLiteral("Hide the input box"));
+    auto hideTextInputOption = QCommandLineOption(QStringLiteral("hideTextInput"), QStringLiteral("Hide the text input box (for tablet/kiosk mode)"));
     auto dpiOption = QCommandLineOption(QStringLiteral("dpi"), QStringLiteral("dpi"), QStringLiteral("dpi"));
     auto skillOption = QCommandLineOption(QStringLiteral("skill"), QStringLiteral("Single skill to load"), QStringLiteral("skill"));
     auto maximizeOption = QCommandLineOption(QStringLiteral("maximize"), QStringLiteral("When set, start maximized."));
     auto rotateScreen = QCommandLineOption(QStringLiteral("rotateScreen"), QStringLiteral("When set, rotate the screen by set degrees."), QStringLiteral("degrees"));
+    auto shellOption = QCommandLineOption(QStringLiteral("shell"), QStringLiteral("Launch in shell mode (homescreen, notifications, OSD)."));
     auto helpOption = QCommandLineOption(QStringLiteral("help"), QStringLiteral("Show this help message"));
     parser.addOptions({widthOption, heightOption, hideTextInputOption, skillOption,
                        dpiOption, maximizeOption,
-                       rotateScreen, helpOption});
+                       rotateScreen, shellOption, helpOption});
     parser.process(arguments);
 
 
@@ -61,8 +66,17 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-    app.setApplicationName(QStringLiteral("mycroft.gui"));
-    app.setOrganizationDomain(QStringLiteral("kde.org"));
+    bool shellMode = parser.isSet(shellOption);
+
+    if (shellMode) {
+        app.setApplicationName(QStringLiteral("OvosShell"));
+        app.setOrganizationName(QStringLiteral("OpenVoiceOS"));
+        app.setOrganizationDomain(QStringLiteral("OpenVoiceOS.com"));
+        qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
+    } else {
+        app.setApplicationName(QStringLiteral("mycroft.gui"));
+        app.setOrganizationDomain(QStringLiteral("kde.org"));
+    }
     app.setWindowIcon(QIcon::fromTheme(QStringLiteral("mycroft")));
 
     // NOTE: Have to manually implement a --help option because the parser.addHelpOption() would
@@ -90,9 +104,6 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(QStringLiteral("globalScreenRotation"), parser.isSet(rotateScreen) ? rotation : 0);
     engine.rootContext()->setContextProperty(QStringLiteral("versionNumber"), QStringLiteral(mycroftguiapp_VERSION_STRING));
 
-    engine.rootContext()->setContextProperty(QStringLiteral("keyFilter"), 0);
-    engine.rootContext()->setContextProperty(QStringLiteral("isAndroid"), false);
-
     QString singleSkill = parser.value(skillOption);
     if (singleSkill.endsWith(QStringLiteral(".home"))) {
         singleSkill = singleSkill.left(singleSkill.indexOf(QStringLiteral(".home")));
@@ -111,9 +122,15 @@ int main(int argc, char *argv[])
     AppSettings *appSettings = new AppSettings(&view);
     engine.rootContext()->setContextProperty(QStringLiteral("applicationSettings"), appSettings);
 
-    qmlRegisterType<SpeechIntent>("org.kde.private.mycroftgui", 1, 0, "SpeechIntent");
-
-    engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    if (shellMode) {
+        // Shell mode: register additional context properties and load shell QML
+        engine.rootContext()->setContextProperty(QStringLiteral("environmentSummary"), new EnvironmentSummary(nullptr));
+        engine.rootContext()->setContextProperty(QStringLiteral("resetOperations"), new ResetOperations(nullptr));
+        engine.load(QUrl(QStringLiteral("qrc:/shell/main.qml")));
+    } else {
+        // Standard GUI client mode
+        engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
+    }
 
     return app.exec();
 }

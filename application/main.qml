@@ -72,13 +72,6 @@ Kirigami.ApplicationWindow {
         }
     }
     
-    Connections {
-        target: keyFilter
-        onGlobalBackReceived: {
-            mainView.currentItem.backRequested()
-        }
-    }
-
     //HACK
     Connections {
         target: root.pageStack.layers

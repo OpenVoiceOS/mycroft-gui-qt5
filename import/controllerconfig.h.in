@@ -1,1 +1,5 @@
-#cmakedefine BUILD_REMOTE_TTS 
+#cmakedefine BUILD_REMOTE_TTS
+
+// Compiled-in default path for SYSTEM: template QML files.
+// Overridden at runtime by the OVOS_SYSTEM_TEMPLATES environment variable.
+#define MYCROFT_SYSTEM_TEMPLATES_DIR "@MYCROFT_SYSTEM_TEMPLATES_DIR@"

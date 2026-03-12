@@ -16,13 +16,17 @@
  *
  */
 
-import QtQuick 2.4
-import QtQuick.Controls 2.2 as Controls
-import QtQuick.Templates 2.2 as Templates
-import QtQuick.Layouts 1.3
-import QtMultimedia 5.9
-import org.kde.kirigami 2.5 as Kirigami
+import QtQuick 2.12
+import QtQuick.Controls 2.12 as Controls
+import QtQuick.Templates 2.12 as Templates
+import QtQuick.Layouts 1.12
+import QtMultimedia 5.12
+import org.kde.kirigami 2.14 as Kirigami
 import Mycroft 1.0 as Mycroft
+
+// DEPRECATED: This component duplicates system-templates/VideoPlayer.qml functionality.
+// Use the system template (SYSTEM_media_player or SYSTEM_video_player) instead.
+// See docs/QML_AUDIT_AND_MIGRATION.md for details.
 
 Item {
     id: root

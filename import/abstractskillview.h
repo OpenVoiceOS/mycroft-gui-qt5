@@ -29,6 +29,19 @@ class AbstractDelegate;
 class SessionDataMap;
 class QTranslator;
 
+/**
+ * @class AbstractSkillView
+ *
+ * Manages the GUI representation of active Mycroft skills.
+ *
+ * MODEL LIFECYCLE:
+ * - SessionDataMap: created per-skill on first data update, destroyed when skill is removed or view disconnects
+ * - SessionDataModel: created per-skill-property on first update, stored in SessionDataMap, cleaned up with parent
+ * - ActiveSkillsModel: singleton for this view, models the active skill list
+ * - Delegates: created lazily per skill, managed by ActiveSkillsModel
+ * - Cleanup: All models are automatically cleaned up when the WebSocket disconnects (M4)
+ *           Views unregister from MycroftController on destruction (M3)
+ */
 class AbstractSkillView: public QQuickItem
 {
     Q_OBJECT
